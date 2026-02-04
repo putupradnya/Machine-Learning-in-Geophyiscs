@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 02: Data Wrangling - ML in Geofisika</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #151922;
+            --bg-tertiary: #1e2530;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #7c3aed;
+            --text-primary: #e8edf4;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --border: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Serif', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 217, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .logo-text h1 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .logo-text p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            min-height: calc(100vh - 100px);
+        }
+        
+        .sidebar {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+            border: 1px solid var(--border);
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .sidebar-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        
+        .nav-list {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 0.7rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            transform: scaleY(0);
+            transition: transform 0.2s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding-left: 1.5rem;
+        }
+        
+        .nav-link:hover::before, .nav-link.active::before {
+            transform: scaleY(1);
+        }
+        
+        .nav-link.active {
+            font-weight: 600;
+        }
+        
+        .main-content {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 3rem;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .content-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .content-header h2 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .content-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .content-body h3 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+        
+        .content-body h4 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-top: 2rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+        }
+        
+        .content-body p {
+            margin-bottom: 1.2rem;
+            color: var(--text-secondary);
+        }
+        
+        .content-body ul, .content-body ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .content-body li {
+            margin-bottom: 0.7rem;
+        }
+        
+        .content-body strong {
+            color: var(--text-primary);
+        }
+        
+        .slides-container {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .slides-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .slides-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .slides-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-primary);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 217, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+        }
+        
+        .slides-embed {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            background: var(--bg-primary);
+        }
+        
+        .slides-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .alert {
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--text-secondary);
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: var(--text-secondary);
+        }
+        
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
+            color: var(--text-secondary);
+        }
+        
+        .objectives-box {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.05), rgba(124, 58, 237, 0.05));
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .objectives-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .code-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+        
+        pre {
+            margin: 0;
+        }
+        
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .resource-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+        }
+        
+        .resource-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .resource-card h4 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .resource-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        
+        .resource-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .content-header h2 {
+                font-size: 2rem;
+            }
+            
+            .slides-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">ML</div>
+                <div class="logo-text">
+                    <h1>ML in Geofisika</h1>
+                    <p>Wiki & Modul Praktikum</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Pendahuluan</div>
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="silabus.html" class="nav-link">Silabus Lengkap</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Materi Pertemuan</div>
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="pertemuan-01.html" class="nav-link">01. Introduction ML</a></li>
+                    <li class="nav-item"><a href="pertemuan-02.html" class="nav-link active">02. Data Wrangling</a></li>
+                    <li class="nav-item"><a href="pertemuan-03.html" class="nav-link">03. EDA</a></li>
+                    <li class="nav-item"><a href="pertemuan-04.html" class="nav-link">04. Supervised - Klasifikasi</a></li>
+                    <li class="nav-item"><a href="pertemuan-05.html" class="nav-link">05. Supervised - Regresi</a></li>
+                    <li class="nav-item"><a href="pertemuan-06.html" class="nav-link">06. Evaluasi & Tuning</a></li>
+                    <li class="nav-item"><a href="pertemuan-07.html" class="nav-link">07. Hands-on Supervised</a></li>
+                    <li class="nav-item"><a href="pertemuan-09.html" class="nav-link">09. Unsupervised</a></li>
+                    <li class="nav-item"><a href="pertemuan-12.html" class="nav-link">12. Deep Learning</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Modul Praktikum</div>
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="praktikum-01.html" class="nav-link">01. Data Wrangling & EDA</a></li>
+                    <li class="nav-item"><a href="praktikum-02.html" class="nav-link">02. Supervised Learning</a></li>
+                    <li class="nav-item"><a href="praktikum-03.html" class="nav-link">03. Unsupervised Learning</a></li>
+                    <li class="nav-item"><a href="praktikum-04.html" class="nav-link">04. Deep Learning</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h2>Pertemuan 02: Data Wrangling</h2>
+                <div class="content-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span>Minggu ke-2</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>⏱️</span>
+                        <span>3 x 50 menit</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📖</span>
+                        <span>Teori</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-body">
+                <div class="objectives-box">
+                    <div class="objectives-title">
+                        <span>🎯</span>
+                        <span>Tujuan Pembelajaran</span>
+                    </div>
+                    <p>Setelah mengikuti pertemuan ini, mahasiswa diharapkan mampu:</p>
+                    <ul style="margin-bottom: 0;">
+                        <li>Memahami sumber-sumber data geofisika dan format file yang umum digunakan</li>
+                        <li>Menguasai teknik handling missing values pada well log dan data seismik</li>
+                        <li>Mengimplementasikan data cleaning untuk mengatasi outlier dan noise</li>
+                        <li>Melakukan transformasi data menggunakan library Pandas</li>
+                        <li>Mempersiapkan data geofisika untuk machine learning pipeline</li>
+                    </ul>
+                </div>
+
+                <div class="slides-container">
+                    <div class="slides-header">
+                        <div class="slides-title">
+                            <span>📊</span>
+                            <span>Materi Presentasi</span>
+                        </div>
+                        <div class="slides-actions">
+                            <a href="https://docs.google.com/presentation/d/1TQbGyRc5A2eAlAlpDTjMD96N0ik2-iJCZRaENLqZDDmyOnBunyhMwXS0VMelcRKQ/edit" 
+                               target="_blank" class="btn btn-primary">
+                                <span>🔗</span>
+                                <span>Buka di Google Slides</span>
+                            </a>
+                            <button onclick="toggleFullscreen()" class="btn btn-secondary">
+                                <span>⛶</span>
+                                <span>Fullscreen</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="slides-embed" id="slidesEmbed">
+                        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTQbGyRc5A2eAlAlpDTjMD96N0ik2-iJCZRaENLqZDDmyOnBunyhMwXS0VMelcRKQ/embed?start=false&loop=false" 
+                                frameborder="0" 
+                                allowfullscreen="true" 
+                                mozallowfullscreen="true" 
+                                webkitallowfullscreen="true">
+                        </iframe>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>💡 Catatan:</strong> Slide presentasi di atas akan otomatis terupdate ketika dosen melakukan perubahan pada Google Slides. 
+                    Pastikan koneksi internet Anda stabil untuk viewing yang optimal.
+                </div>
+
+                <h3>Ringkasan Materi</h3>
+                
+                <h4>1. Sumber Data Geofisika</h4>
+                <p>
+                    Data geofisika berasal dari berbagai sumber pengukuran yang masing-masing memiliki karakteristik dan 
+                    format unik. Memahami sumber data sangat penting untuk preprocessing yang efektif.
+                </p>
+                <ul>
+                    <li><strong>Well Log Data:</strong> Format LAS (Log ASCII Standard), CSV, DLIS - pengukuran 1D sepanjang sumur</li>
+                    <li><strong>Seismic Data:</strong> Format SEG-Y, SEGY - data 2D/3D/4D dengan jutaan trace</li>
+                    <li><strong>Core Data:</strong> Hasil analisis laboratorium dalam format spreadsheet</li>
+                    <li><strong>Production Data:</strong> Time series data produksi minyak, gas, dan air</li>
+                </ul>
+
+                <h4>2. Tantangan Data Geofisika</h4>
+                <p>
+                    Data geofisika memiliki tantangan khusus yang harus ditangani sebelum digunakan untuk machine learning:
+                </p>
+                <ul>
+                    <li><strong>Missing Values:</strong> Bad hole sections, sensor failure, incomplete logging</li>
+                    <li><strong>Outliers:</strong> Spike noise, washout zones, tool malfunction</li>
+                    <li><strong>Scale Differences:</strong> Fitur dengan range nilai yang sangat berbeda (GR: 0-200 API, RHOB: 1.5-3.0 g/cc)</li>
+                    <li><strong>Format Inconsistency:</strong> Berbagai vendor dengan format proprietary</li>
+                    <li><strong>Large Volume:</strong> Seismic 3D bisa mencapai terabytes data</li>
+                </ul>
+
+                <h4>3. Teknik Handling Missing Values</h4>
+                <p>
+                    Berbagai strategi untuk menangani missing values pada data geofisika:
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                    </div>
+                    <pre><code>import pandas as pd
+import numpy as np
+
+# Load well log data
+df = pd.read_csv('well_log.csv')
+
+# Check missing values
+print(df.isnull().sum())
+
+# Strategy 1: Drop rows with missing values (use with caution)
+df_clean = df.dropna()
+
+# Strategy 2: Forward fill (untuk data sequential seperti depth)
+df['GR_filled'] = df['GR'].fillna(method='ffill')
+
+# Strategy 3: Interpolation (linear, polynomial, spline)
+df['RHOB_interp'] = df['RHOB'].interpolate(method='linear')
+
+# Strategy 4: Fill with median/mean (untuk data non-sequential)
+df['NPHI_filled'] = df['NPHI'].fillna(df['NPHI'].median())
+
+# Strategy 5: Predictive imputation using other features
+from sklearn.impute import KNNImputer
+imputer = KNNImputer(n_neighbors=5)
+df_imputed = pd.DataFrame(
+    imputer.fit_transform(df[['GR', 'RHOB', 'NPHI']]),
+    columns=['GR', 'RHOB', 'NPHI']
+)</code></pre>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>⚠️ Penting:</strong> Pilihan metode handling missing values bergantung pada: persentase missing data, 
+                    pola missing (random vs systematic), dan tipe analisis yang akan dilakukan. Untuk well log, interpolasi 
+                    sering lebih baik daripada deletion karena data bersifat sequential.
+                </div>
+
+                <h4>4. Data Cleaning: Outlier Detection & Removal</h4>
+                <p>
+                    Outlier pada data geofisika bisa disebabkan oleh tool malfunction atau kondisi geologi ekstrem. 
+                    Penting untuk membedakan keduanya sebelum removal.
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                    </div>
+                    <pre><code># Method 1: Statistical approach (Z-score)
+from scipy import stats
+z_scores = np.abs(stats.zscore(df['GR']))
+df_no_outliers = df[z_scores < 3]  # Remove data beyond 3 std
+
+# Method 2: IQR (Interquartile Range)
+Q1 = df['RHOB'].quantile(0.25)
+Q3 = df['RHOB'].quantile(0.75)
+IQR = Q3 - Q1
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+df_filtered = df[(df['RHOB'] >= lower_bound) & (df['RHOB'] <= upper_bound)]
+
+# Method 3: Domain knowledge (physics-based constraints)
+# For RHOB (bulk density), physically impossible values
+df_clean = df[(df['RHOB'] > 1.0) & (df['RHOB'] < 3.5)]
+
+# Method 4: Isolation Forest (ML-based outlier detection)
+from sklearn.ensemble import IsolationForest
+iso_forest = IsolationForest(contamination=0.1, random_state=42)
+outlier_labels = iso_forest.fit_predict(df[['GR', 'RHOB', 'NPHI']])
+df_clean = df[outlier_labels == 1]  # Keep only inliers</code></pre>
+                </div>
+
+                <h4>5. Data Transformation & Normalization</h4>
+                <p>
+                    Transformasi data diperlukan untuk membuat fitur-fitur geofisika comparable dan meningkatkan performa model ML.
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                    </div>
+                    <pre><code>from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+
+# StandardScaler: mean=0, std=1 (sensitive to outliers)
+scaler = StandardScaler()
+df_scaled = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
+
+# MinMaxScaler: scale to [0,1] range
+scaler = MinMaxScaler()
+df_normalized = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
+
+# RobustScaler: uses median and IQR (robust to outliers)
+scaler = RobustScaler()
+df_robust = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
+
+# Log transformation (for skewed data)
+df['GR_log'] = np.log1p(df['GR'])  # log1p = log(1+x) to handle zeros
+
+# Box-Cox transformation (requires positive values)
+from scipy.stats import boxcox
+df['RHOB_boxcox'], lambda_param = boxcox(df['RHOB'])</code></pre>
+                </div>
+
+                <h4>6. Working with LAS Files</h4>
+                <p>
+                    LAS (Log ASCII Standard) adalah format standar industri untuk well log. Python library <code>lasio</code> 
+                    memudahkan pembacaan dan manipulasi file LAS.
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                    </div>
+                    <pre><code>import lasio
+
+# Read LAS file
+las = lasio.read('well_data.las')
+
+# Access well information
+print(f"Well Name: {las.well.WELL.value}")
+print(f"Field: {las.well.FLD.value}")
+print(f"Start Depth: {las.well.STRT.value} {las.well.STRT.unit}")
+
+# Convert to pandas DataFrame
+df = las.df()
+print(df.head())
+
+# Access specific curves
+gr_curve = las.curves['GR']
+print(f"GR units: {gr_curve.unit}")
+print(f"GR description: {gr_curve.descr}")
+
+# Filter by depth range
+df_filtered = df[(df.index >= 2000) & (df.index <= 3000)]
+
+# Export to CSV
+df.to_csv('well_log_clean.csv')</code></pre>
+                </div>
+
+                <h3>Best Practices</h3>
+
+                <div class="alert alert-success">
+                    <strong>✅ Tips Data Wrangling untuk Geofisika:</strong>
+                    <ol style="margin-top: 0.5rem; margin-bottom: 0;">
+                        <li><strong>Document Everything:</strong> Catat setiap preprocessing step untuk reproducibility</li>
+                        <li><strong>Visualize Before & After:</strong> Selalu plot data sebelum dan sesudah cleaning/transformation</li>
+                        <li><strong>Preserve Raw Data:</strong> Jangan overwrite data asli, simpan hasil preprocessing terpisah</li>
+                        <li><strong>Domain Knowledge:</strong> Konsultasi dengan geoscientist untuk validasi data cleaning</li>
+                        <li><strong>Test Multiple Methods:</strong> Compare hasil dari berbagai metode imputation/scaling</li>
+                        <li><strong>Check Distributions:</strong> Pastikan transformasi tidak mengubah informasi penting</li>
+                    </ol>
+                </div>
+
+                <h3>Resources Tambahan</h3>
+                
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <div class="resource-icon">📚</div>
+                        <h4>Pandas Documentation</h4>
+                        <p>Official docs untuk data manipulation</p>
+                        <a href="https://pandas.pydata.org/docs/" class="resource-link" target="_blank">Visit →</a>
+                    </div>
+                    
+                    <div class="resource-card">
+                        <div class="resource-icon">🔧</div>
+                        <h4>Lasio Library</h4>
+                        <p>Python library untuk LAS file handling</p>
+                        <a href="https://lasio.readthedocs.io/" class="resource-link" target="_blank">Visit →</a>
+                    </div>
+                    
+                    <div class="resource-card">
+                        <div class="resource-icon">💻</div>
+                        <h4>Sample Notebooks</h4>
+                        <p>Jupyter notebooks dengan contoh lengkap</p>
+                        <a href="#" class="resource-link">Download →</a>
+                    </div>
+                    
+                    <div class="resource-card">
+                        <div class="resource-icon">📊</div>
+                        <h4>Sample LAS Files</h4>
+                        <p>Well log data untuk praktek</p>
+                        <a href="#" class="resource-link">Download →</a>
+                    </div>
+                </div>
+
+                <h3>Tugas & Latihan</h3>
+                
+                <div class="alert alert-success">
+                    <strong>📝 Tugas Mingguan:</strong>
+                    <ol style="margin-top: 0.5rem; margin-bottom: 0;">
+                        <li>Download sample LAS file dan load menggunakan lasio</li>
+                        <li>Identifikasi dan handle missing values dengan minimal 3 metode berbeda</li>
+                        <li>Detect dan remove outliers, dokumentasikan berapa data yang di-remove</li>
+                        <li>Lakukan normalization dengan StandardScaler dan MinMaxScaler, bandingkan hasilnya</li>
+                        <li>Buat visualization sebelum dan sesudah preprocessing (minimum 4 plots)</li>
+                        <li>Submit Jupyter notebook dengan dokumentasi lengkap</li>
+                    </ol>
+                </div>
+
+                <h3>Persiapan Pertemuan Selanjutnya</h3>
+                
+                <p>Pada pertemuan berikutnya, kita akan membahas <strong>Exploratory Data Analysis (EDA)</strong>. Pastikan Anda sudah:</p>
+                <ul>
+                    <li>Familiar dengan plotting library: Matplotlib dan Seaborn</li>
+                    <li>Memahami statistik deskriptif dasar (mean, median, std, correlation)</li>
+                    <li>Install library: <code>seaborn</code>, <code>plotly</code> (untuk visualisasi interaktif)</li>
+                    <li>Data yang sudah di-clean dari tugas minggu ini akan digunakan untuk EDA</li>
+                </ul>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between;">
+                    <a href="pertemuan-01.html" style="color: var(--accent-primary); text-decoration: none;">← Previous: Introduction ML</a>
+                    <a href="pertemuan-03.html" style="color: var(--accent-primary); text-decoration: none;">Next: EDA →</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Machine Learning in Geofisika. Hosted on GitHub Pages.</p>
+    </footer>
+
+    <script>
+        function toggleFullscreen() {
+            const embed = document.getElementById('slidesEmbed');
+            if (!document.fullscreenElement) {
+                embed.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>

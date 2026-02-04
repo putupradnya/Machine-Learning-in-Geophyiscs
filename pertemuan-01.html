@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 01: Introduction to Machine Learning - ML in Geofisika</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #151922;
+            --bg-tertiary: #1e2530;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #7c3aed;
+            --text-primary: #e8edf4;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --border: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Serif', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 217, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .logo-text h1 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .logo-text p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            min-height: calc(100vh - 100px);
+        }
+        
+        .sidebar {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+            border: 1px solid var(--border);
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .sidebar-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        
+        .nav-list {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 0.7rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            transform: scaleY(0);
+            transition: transform 0.2s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding-left: 1.5rem;
+        }
+        
+        .nav-link:hover::before, .nav-link.active::before {
+            transform: scaleY(1);
+        }
+        
+        .nav-link.active {
+            font-weight: 600;
+        }
+        
+        .main-content {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 3rem;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .content-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .content-header h2 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .content-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .content-body h3 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+        
+        .content-body h4 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-top: 2rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+        }
+        
+        .content-body p {
+            margin-bottom: 1.2rem;
+            color: var(--text-secondary);
+        }
+        
+        .content-body ul, .content-body ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .content-body li {
+            margin-bottom: 0.7rem;
+        }
+        
+        .content-body strong {
+            color: var(--text-primary);
+        }
+        
+        /* Slides Container */
+        .slides-container {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .slides-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .slides-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .slides-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-primary);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 217, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+        }
+        
+        .slides-embed {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            background: var(--bg-primary);
+        }
+        
+        .slides-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .alert {
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--text-secondary);
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: var(--text-secondary);
+        }
+        
+        .objectives-box {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.05), rgba(124, 58, 237, 0.05));
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .objectives-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .resource-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+        }
+        
+        .resource-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .resource-card h4 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .resource-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        
+        .resource-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .content-header h2 {
+                font-size: 2rem;
+            }
+            
+            .slides-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">ML</div>
+                <div class="logo-text">
+                    <h1>ML in Geofisika</h1>
+                    <p>Wiki & Modul Praktikum</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Pendahuluan</div>
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="silabus.html" class="nav-link">Silabus Lengkap</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Materi Pertemuan</div>
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="pertemuan-01.html" class="nav-link active">01. Introduction ML</a></li>
+                    <li class="nav-item"><a href="pertemuan-02.html" class="nav-link">02. Data Wrangling</a></li>
+                    <li class="nav-item"><a href="pertemuan-03.html" class="nav-link">03. EDA</a></li>
+                    <li class="nav-item"><a href="pertemuan-04.html" class="nav-link">04. Supervised - Klasifikasi</a></li>
+                    <li class="nav-item"><a href="pertemuan-05.html" class="nav-link">05. Supervised - Regresi</a></li>
+                    <li class="nav-item"><a href="pertemuan-06.html" class="nav-link">06. Evaluasi & Tuning</a></li>
+                    <li class="nav-item"><a href="pertemuan-07.html" class="nav-link">07. Hands-on Supervised</a></li>
+                    <li class="nav-item"><a href="pertemuan-09.html" class="nav-link">09. Unsupervised - Clustering</a></li>
+                    <li class="nav-item"><a href="pertemuan-10.html" class="nav-link">10. Evaluasi Unsupervised</a></li>
+                    <li class="nav-item"><a href="pertemuan-11.html" class="nav-link">11. Hands-on Unsupervised</a></li>
+                    <li class="nav-item"><a href="pertemuan-12.html" class="nav-link">12. Pengantar Deep Learning</a></li>
+                    <li class="nav-item"><a href="pertemuan-13.html" class="nav-link">13. Hands-on Deep Learning</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Modul Praktikum</div>
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="praktikum-01.html" class="nav-link">01. Data Wrangling & EDA</a></li>
+                    <li class="nav-item"><a href="praktikum-02.html" class="nav-link">02. Supervised Learning</a></li>
+                    <li class="nav-item"><a href="praktikum-03.html" class="nav-link">03. Unsupervised Learning</a></li>
+                    <li class="nav-item"><a href="praktikum-04.html" class="nav-link">04. Deep Learning</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h2>Pertemuan 01: Introduction to Machine Learning</h2>
+                <div class="content-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span>Minggu ke-1</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>⏱️</span>
+                        <span>3 x 50 menit</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📖</span>
+                        <span>Teori</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-body">
+                <div class="objectives-box">
+                    <div class="objectives-title">
+                        <span>🎯</span>
+                        <span>Tujuan Pembelajaran</span>
+                    </div>
+                    <p>Setelah mengikuti pertemuan ini, mahasiswa diharapkan mampu:</p>
+                    <ul style="margin-bottom: 0;">
+                        <li>Memahami konsep dasar machine learning dan artificial intelligence</li>
+                        <li>Membedakan paradigma supervised, unsupervised, dan reinforcement learning</li>
+                        <li>Mengidentifikasi aplikasi machine learning dalam industri geofisika</li>
+                        <li>Menjelaskan workflow umum dalam proyek machine learning</li>
+                        <li>Memahami tantangan dan limitasi machine learning pada data geofisika</li>
+                    </ul>
+                </div>
+
+                <div class="slides-container">
+                    <div class="slides-header">
+                        <div class="slides-title">
+                            <span>📊</span>
+                            <span>Materi Presentasi</span>
+                        </div>
+                        <div class="slides-actions">
+                            <a href="https://docs.google.com/presentation/d/1Zl_LXSaeTlC05465RuED8xlzSDBWCU0LSJ7cVDdbWy0/edit?usp=sharing" 
+                               target="_blank" class="btn btn-primary">
+                                <span>🔗</span>
+                                <span>Buka di Google Slides</span>
+                            </a>
+                            <button onclick="toggleFullscreen()" class="btn btn-secondary">
+                                <span>⛶</span>
+                                <span>Fullscreen</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="slides-embed" id="slidesEmbed">
+                        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vThq16L5GZ2JAoNLAlo9Yrd5RVuFhqb1K5Kseo4eqTrY4o98HqJub8I2nCy0wfli7TpieVOuND0kbug/embed?start=false&loop=false" 
+                                frameborder="0" 
+                                allowfullscreen="true" 
+                                mozallowfullscreen="true" 
+                                webkitallowfullscreen="true">
+                        </iframe>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>💡 Catatan:</strong> Slide presentasi di atas akan otomatis terupdate ketika dosen melakukan perubahan pada Google Slides. 
+                    Pastikan koneksi internet Anda stabil untuk viewing yang optimal.
+                </div>
+
+                <h3>Ringkasan Materi</h3>
+                
+                <h4>1. Apa itu Machine Learning?</h4>
+                <p>
+                    Machine Learning adalah cabang dari Artificial Intelligence yang memungkinkan komputer untuk belajar 
+                    dari data dan membuat prediksi atau keputusan tanpa diprogram secara eksplisit. Dalam konteks geofisika, 
+                    ML membantu kita menganalisis data kompleks dari seismik, well log, gravitasi, dan magnetik untuk 
+                    ekstraksi informasi yang lebih efisien dan akurat.
+                </p>
+
+                <h4>2. Tiga Paradigma Machine Learning</h4>
+                <p>
+                    <strong>Supervised Learning:</strong> Belajar dari data berlabel untuk membuat prediksi. Contoh dalam geofisika 
+                    adalah prediksi porositas dari well log atau klasifikasi litologi dari data seismik.
+                </p>
+                <p>
+                    <strong>Unsupervised Learning:</strong> Menemukan pola tersembunyi dalam data tanpa label. Contoh adalah 
+                    clustering fasies seismik atau segmentasi data geofisika berdasarkan karakteristik serupa.
+                </p>
+                <p>
+                    <strong>Reinforcement Learning:</strong> Belajar melalui interaksi dengan environment dan reward system. 
+                    Aplikasi dalam optimasi parameter survey atau drilling strategy.
+                </p>
+
+                <h4>3. Aplikasi ML dalam Geofisika</h4>
+                <ul>
+                    <li>Interpretasi seismik otomatis (horizon picking, fault detection)</li>
+                    <li>Well log analysis dan prediksi properti reservoir</li>
+                    <li>Seismic facies classification</li>
+                    <li>Inversi geofisika dengan ML</li>
+                    <li>Prediksi produksi hidrokarbon</li>
+                    <li>Deteksi anomali dan quality control data</li>
+                </ul>
+
+                <h4>4. Workflow Machine Learning</h4>
+                <p>
+                    Proyek ML umumnya mengikuti tahapan: Problem Definition → Data Collection → Data Preprocessing → 
+                    Exploratory Data Analysis → Feature Engineering → Model Selection → Training → Evaluation → 
+                    Hyperparameter Tuning → Deployment. Setiap tahapan memiliki pertimbangan khusus untuk data geofisika.
+                </p>
+
+                <h3>Resources Tambahan</h3>
+                
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <div class="resource-icon">📚</div>
+                        <h4>Reading Materials</h4>
+                        <p>Paper dan artikel terkait ML dalam geofisika</p>
+                        <a href="#" class="resource-link">Lihat Daftar →</a>
+                    </div>
+                    
+                    <div class="resource-card">
+                        <div class="resource-icon">🎥</div>
+                        <h4>Video Tutorial</h4>
+                        <p>Playlist video pengantar machine learning</p>
+                        <a href="#" class="resource-link">Tonton Video →</a>
+                    </div>
+                    
+                    <div class="resource-card">
+                        <div class="resource-icon">💻</div>
+                        <h4>Code Examples</h4>
+                        <p>Notebook Jupyter dengan contoh implementasi</p>
+                        <a href="#" class="resource-link">Download →</a>
+                    </div>
+                    
+                    <div class="resource-card">
+                        <div class="resource-icon">📊</div>
+                        <h4>Dataset</h4>
+                        <p>Sample dataset untuk latihan mandiri</p>
+                        <a href="#" class="resource-link">Download →</a>
+                    </div>
+                </div>
+
+                <h3>Tugas & Latihan</h3>
+                
+                <div class="alert alert-success">
+                    <strong>📝 Tugas Mingguan:</strong>
+                    <ol style="margin-top: 0.5rem; margin-bottom: 0;">
+                        <li>Baca paper: "Machine Learning for Seismic Interpretation" (tersedia di resources)</li>
+                        <li>Identifikasi 5 masalah geofisika yang bisa diselesaikan dengan supervised learning</li>
+                        <li>Identifikasi 5 masalah geofisika yang bisa diselesaikan dengan unsupervised learning</li>
+                        <li>Buat mind map tentang workflow ML dalam geofisika (submit dalam format PDF)</li>
+                    </ol>
+                </div>
+
+                <h3>Persiapan Pertemuan Selanjutnya</h3>
+                
+                <p>Pada pertemuan berikutnya, kita akan membahas tentang <strong>Data Wrangling</strong>. Pastikan Anda sudah:</p>
+                <ul>
+                    <li>Install Python 3.8+ dan library: NumPy, Pandas, Matplotlib</li>
+                    <li>Familiar dengan Jupyter Notebook atau Google Colab</li>
+                    <li>Download sample dataset yang akan digunakan (link di resources)</li>
+                </ul>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between;">
+                    <a href="index.html" style="color: var(--accent-primary); text-decoration: none;">← Kembali ke Home</a>
+                    <a href="pertemuan-02.html" style="color: var(--accent-primary); text-decoration: none;">Next: Data Wrangling →</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Machine Learning in Geofisika. Hosted on GitHub Pages.</p>
+    </footer>
+
+    <script>
+        function toggleFullscreen() {
+            const embed = document.getElementById('slidesEmbed');
+            if (!document.fullscreenElement) {
+                embed.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
