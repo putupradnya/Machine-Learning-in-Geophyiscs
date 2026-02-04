@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pertemuan 02: Data Wrangling - ML in Geofisika</title>
+    <title>Pertemuan 05: Supervised Learning - Regresi - ML in Geofisika</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
@@ -570,10 +570,10 @@
                 <div class="sidebar-title">Materi Pertemuan</div>
                 <ul class="nav-list">
                     <li class="nav-item"><a href="pertemuan-01.html" class="nav-link">01. Introduction ML</a></li>
-                    <li class="nav-item"><a href="pertemuan-02.html" class="nav-link active">02. Data Wrangling</a></li>
+                    <li class="nav-item"><a href="pertemuan-02.html" class="nav-link">02. Data Wrangling</a></li>
                     <li class="nav-item"><a href="pertemuan-03.html" class="nav-link">03. EDA</a></li>
                     <li class="nav-item"><a href="pertemuan-04.html" class="nav-link">04. Supervised - Klasifikasi</a></li>
-                    <li class="nav-item"><a href="pertemuan-05.html" class="nav-link">05. Supervised - Regresi</a></li>
+                    <li class="nav-item"><a href="pertemuan-05.html" class="nav-link active">05. Supervised - Regresi</a></li>
                     <li class="nav-item"><a href="pertemuan-06.html" class="nav-link">06. Evaluasi & Tuning</a></li>
                     <li class="nav-item"><a href="pertemuan-07.html" class="nav-link">07. Hands-on Supervised</a></li>
                     <li class="nav-item"><a href="pertemuan-09.html" class="nav-link">09. Unsupervised</a></li>
@@ -594,11 +594,11 @@
 
         <main class="main-content">
             <div class="content-header">
-                <h2>Pertemuan 02: Data Wrangling</h2>
+                <h2>Pertemuan 05: Supervised Learning - Regresi</h2>
                 <div class="content-meta">
                     <div class="meta-item">
                         <span>📅</span>
-                        <span>Minggu ke-2</span>
+                        <span>Minggu ke-5</span>
                     </div>
                     <div class="meta-item">
                         <span>⏱️</span>
@@ -619,11 +619,11 @@
                     </div>
                     <p>Setelah mengikuti pertemuan ini, mahasiswa diharapkan mampu:</p>
                     <ul style="margin-bottom: 0;">
-                        <li>Memahami sumber-sumber data geofisika dan format file yang umum digunakan</li>
-                        <li>Menguasai teknik handling missing values pada well log dan data seismik</li>
-                        <li>Mengimplementasikan data cleaning untuk mengatasi outlier dan noise</li>
-                        <li>Melakukan transformasi data menggunakan library Pandas</li>
-                        <li>Mempersiapkan data geofisika untuk machine learning pipeline</li>
+                        <li>Memahami konsep regresi untuk prediksi nilai kontinu</li>
+                        <li>Mengimplementasikan Linear dan Polynomial Regression</li>
+                        <li>Menguasai teknik regularization (Ridge, Lasso, ElasticNet)</li>
+                        <li>Memprediksi properti reservoir dari well log</li>
+                        <li>Mengevaluasi model regresi dengan metrics yang tepat (MAE, RMSE, R²)</li>
                     </ul>
                 </div>
 
@@ -634,7 +634,7 @@
                             <span>Materi Presentasi</span>
                         </div>
                         <div class="slides-actions">
-                            <a href="https://docs.google.com/presentation/d/1TQbGyRc5A2eAlAlpDTjMD96N0ik2-iJCZRaENLqZDDmyOnBunyhMwXS0VMelcRKQ/edit" 
+                            <a href="https://docs.google.com/presentation/d/1SaaP6DZiGNj4HSGkcbQsB5PWF4ttA6QykfxRp1US07_k41HIy8uMpRaq9KvaXJNg/edit" 
                                target="_blank" class="btn btn-primary">
                                 <span>🔗</span>
                                 <span>Buka di Google Slides</span>
@@ -647,7 +647,7 @@
                     </div>
                     
                     <div class="slides-embed" id="slidesEmbed">
-                        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTQbGyRc5A2eAlAlpDTjMD96N0ik2-iJCZRaENLqZDDmyOnBunyhMwXS0VMelcRKQ/embed?start=false&loop=false" 
+                        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSaaP6DZiGNj4HSGkcbQsB5PWF4ttA6QykfxRp1US07_k41HIy8uMpRaq9KvaXJNg/embed?start=false&loop=false" 
                                 frameborder="0" 
                                 allowfullscreen="true" 
                                 mozallowfullscreen="true" 
@@ -663,188 +663,141 @@
 
                 <h3>Ringkasan Materi</h3>
                 
-                <h4>1. Sumber Data Geofisika</h4>
+                <h4>1. Konsep Regresi</h4>
                 <p>
-                    Data geofisika berasal dari berbagai sumber pengukuran yang masing-masing memiliki karakteristik dan 
-                    format unik. Memahami sumber data sangat penting untuk preprocessing yang efektif.
+                    Regresi adalah supervised learning untuk memprediksi nilai kontinu berdasarkan input features. 
+                    Dalam geofisika, regresi sangat penting untuk prediksi properti reservoir seperti porositas, 
+                    permeabilitas, dan saturasi hidrokarbon.
                 </p>
+
+                <p><strong>Aplikasi Regresi dalam Geofisika:</strong></p>
                 <ul>
-                    <li><strong>Well Log Data:</strong> Format LAS (Log ASCII Standard), CSV, DLIS - pengukuran 1D sepanjang sumur</li>
-                    <li><strong>Seismic Data:</strong> Format SEG-Y, SEGY - data 2D/3D/4D dengan jutaan trace</li>
-                    <li><strong>Core Data:</strong> Hasil analisis laboratorium dalam format spreadsheet</li>
-                    <li><strong>Production Data:</strong> Time series data produksi minyak, gas, dan air</li>
+                    <li>Prediksi porositas (PHIT) dari well log curves</li>
+                    <li>Estimasi permeabilitas dari core dan log data</li>
+                    <li>Prediksi saturasi hidrokarbon (Sw, So, Sg)</li>
+                    <li>Volume of shale (Vsh) estimation</li>
+                    <li>Production forecasting</li>
                 </ul>
 
-                <h4>2. Tantangan Data Geofisika</h4>
+                <h4>2. Linear Regression</h4>
                 <p>
-                    Data geofisika memiliki tantangan khusus yang harus ditangani sebelum digunakan untuk machine learning:
-                </p>
-                <ul>
-                    <li><strong>Missing Values:</strong> Bad hole sections, sensor failure, incomplete logging</li>
-                    <li><strong>Outliers:</strong> Spike noise, washout zones, tool malfunction</li>
-                    <li><strong>Scale Differences:</strong> Fitur dengan range nilai yang sangat berbeda (GR: 0-200 API, RHOB: 1.5-3.0 g/cc)</li>
-                    <li><strong>Format Inconsistency:</strong> Berbagai vendor dengan format proprietary</li>
-                    <li><strong>Large Volume:</strong> Seismic 3D bisa mencapai terabytes data</li>
-                </ul>
-
-                <h4>3. Teknik Handling Missing Values</h4>
-                <p>
-                    Berbagai strategi untuk menangani missing values pada data geofisika:
+                    Linear Regression adalah model paling sederhana yang assumes linear relationship antara features dan target.
                 </p>
 
                 <div class="code-block">
                     <div class="code-header">
                         <span class="code-lang">Python</span>
                     </div>
-                    <pre><code>import pandas as pd
+                    <pre><code>from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import numpy as np
 
-# Load well log data
-df = pd.read_csv('well_log.csv')
+# Prepare data - prediksi porositas
+X = df[['GR', 'RHOB', 'NPHI', 'DT']]
+y = df['PHIT']  # Total Porosity
 
-# Check missing values
-print(df.isnull().sum())
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-# Strategy 1: Drop rows with missing values (use with caution)
-df_clean = df.dropna()
+# Train Linear Regression
+lr_model = LinearRegression()
+lr_model.fit(X_train, y_train)
 
-# Strategy 2: Forward fill (untuk data sequential seperti depth)
-df['GR_filled'] = df['GR'].fillna(method='ffill')
+# Predictions
+y_pred = lr_model.predict(X_test)
 
-# Strategy 3: Interpolation (linear, polynomial, spline)
-df['RHOB_interp'] = df['RHOB'].interpolate(method='linear')
+# Evaluation
+mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+r2 = r2_score(y_test, y_pred)
 
-# Strategy 4: Fill with median/mean (untuk data non-sequential)
-df['NPHI_filled'] = df['NPHI'].fillna(df['NPHI'].median())
+print(f"MAE: {mae:.4f}")
+print(f"RMSE: {rmse:.4f}")
+print(f"R² Score: {r2:.4f}")
 
-# Strategy 5: Predictive imputation using other features
-from sklearn.impute import KNNImputer
-imputer = KNNImputer(n_neighbors=5)
-df_imputed = pd.DataFrame(
-    imputer.fit_transform(df[['GR', 'RHOB', 'NPHI']]),
-    columns=['GR', 'RHOB', 'NPHI']
-)</code></pre>
+# Coefficients
+for feature, coef in zip(X.columns, lr_model.coef_):
+    print(f"{feature}: {coef:.4f}")</code></pre>
                 </div>
 
-                <div class="alert alert-warning">
-                    <strong>⚠️ Penting:</strong> Pilihan metode handling missing values bergantung pada: persentase missing data, 
-                    pola missing (random vs systematic), dan tipe analisis yang akan dilakukan. Untuk well log, interpolasi 
-                    sering lebih baik daripada deletion karena data bersifat sequential.
-                </div>
-
-                <h4>4. Data Cleaning: Outlier Detection & Removal</h4>
+                <h4>3. Polynomial Regression</h4>
                 <p>
-                    Outlier pada data geofisika bisa disebabkan oleh tool malfunction atau kondisi geologi ekstrem. 
-                    Penting untuk membedakan keduanya sebelum removal.
+                    Untuk capture non-linear relationships, transform features menjadi polynomial form.
                 </p>
 
                 <div class="code-block">
                     <div class="code-header">
                         <span class="code-lang">Python</span>
                     </div>
-                    <pre><code># Method 1: Statistical approach (Z-score)
-from scipy import stats
-z_scores = np.abs(stats.zscore(df['GR']))
-df_no_outliers = df[z_scores < 3]  # Remove data beyond 3 std
+                    <pre><code>from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import Pipeline
 
-# Method 2: IQR (Interquartile Range)
-Q1 = df['RHOB'].quantile(0.25)
-Q3 = df['RHOB'].quantile(0.75)
-IQR = Q3 - Q1
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
-df_filtered = df[(df['RHOB'] >= lower_bound) & (df['RHOB'] <= upper_bound)]
+# Polynomial degree 2
+poly_model = Pipeline([
+    ('poly', PolynomialFeatures(degree=2)),
+    ('linear', LinearRegression())
+])
 
-# Method 3: Domain knowledge (physics-based constraints)
-# For RHOB (bulk density), physically impossible values
-df_clean = df[(df['RHOB'] > 1.0) & (df['RHOB'] < 3.5)]
+poly_model.fit(X_train, y_train)
+y_pred_poly = poly_model.predict(X_test)
 
-# Method 4: Isolation Forest (ML-based outlier detection)
-from sklearn.ensemble import IsolationForest
-iso_forest = IsolationForest(contamination=0.1, random_state=42)
-outlier_labels = iso_forest.fit_predict(df[['GR', 'RHOB', 'NPHI']])
-df_clean = df[outlier_labels == 1]  # Keep only inliers</code></pre>
+r2_poly = r2_score(y_test, y_pred_poly)
+print(f"Polynomial R²: {r2_poly:.4f}")</code></pre>
                 </div>
 
-                <h4>5. Data Transformation & Normalization</h4>
+                <h4>4. Regularized Regression</h4>
                 <p>
-                    Transformasi data diperlukan untuk membuat fitur-fitur geofisika comparable dan meningkatkan performa model ML.
+                    Regularization menambahkan penalty untuk prevent overfitting. Tiga types: Ridge (L2), Lasso (L1), ElasticNet.
                 </p>
 
                 <div class="code-block">
                     <div class="code-header">
                         <span class="code-lang">Python</span>
                     </div>
-                    <pre><code>from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+                    <pre><code>from sklearn.linear_model import Ridge, Lasso, ElasticNet
+from sklearn.preprocessing import StandardScaler
 
-# StandardScaler: mean=0, std=1 (sensitive to outliers)
+# Feature scaling
 scaler = StandardScaler()
-df_scaled = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
-# MinMaxScaler: scale to [0,1] range
-scaler = MinMaxScaler()
-df_normalized = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
+# Ridge Regression (L2)
+ridge_model = Ridge(alpha=1.0)
+ridge_model.fit(X_train_scaled, y_train)
+y_pred_ridge = ridge_model.predict(X_test_scaled)
+print(f"Ridge R²: {r2_score(y_test, y_pred_ridge):.4f}")
 
-# RobustScaler: uses median and IQR (robust to outliers)
-scaler = RobustScaler()
-df_robust = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
+# Lasso Regression (L1 - feature selection)
+lasso_model = Lasso(alpha=0.1)
+lasso_model.fit(X_train_scaled, y_train)
+y_pred_lasso = lasso_model.predict(X_test_scaled)
+print(f"Lasso R²: {r2_score(y_test, y_pred_lasso):.4f}")
 
-# Log transformation (for skewed data)
-df['GR_log'] = np.log1p(df['GR'])  # log1p = log(1+x) to handle zeros
-
-# Box-Cox transformation (requires positive values)
-from scipy.stats import boxcox
-df['RHOB_boxcox'], lambda_param = boxcox(df['RHOB'])</code></pre>
+# ElasticNet (L1 + L2)
+elastic_model = ElasticNet(alpha=0.1, l1_ratio=0.5)
+elastic_model.fit(X_train_scaled, y_train)
+y_pred_elastic = elastic_model.predict(X_test_scaled)
+print(f"ElasticNet R²: {r2_score(y_test, y_pred_elastic):.4f}")</code></pre>
                 </div>
 
-                <h4>6. Working with LAS Files</h4>
+                <h4>5. Model Evaluation</h4>
                 <p>
-                    LAS (Log ASCII Standard) adalah format standar industri untuk well log. Python library <code>lasio</code> 
-                    memudahkan pembacaan dan manipulasi file LAS.
+                    Metrics evaluasi untuk regression: MAE (interpretable), RMSE (penalize large errors), R² (proportion of variance explained).
                 </p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python</span>
-                    </div>
-                    <pre><code>import lasio
-
-# Read LAS file
-las = lasio.read('well_data.las')
-
-# Access well information
-print(f"Well Name: {las.well.WELL.value}")
-print(f"Field: {las.well.FLD.value}")
-print(f"Start Depth: {las.well.STRT.value} {las.well.STRT.unit}")
-
-# Convert to pandas DataFrame
-df = las.df()
-print(df.head())
-
-# Access specific curves
-gr_curve = las.curves['GR']
-print(f"GR units: {gr_curve.unit}")
-print(f"GR description: {gr_curve.descr}")
-
-# Filter by depth range
-df_filtered = df[(df.index >= 2000) & (df.index <= 3000)]
-
-# Export to CSV
-df.to_csv('well_log_clean.csv')</code></pre>
-                </div>
-
-                <h3>Best Practices</h3>
 
                 <div class="alert alert-success">
-                    <strong>✅ Tips Data Wrangling untuk Geofisika:</strong>
-                    <ol style="margin-top: 0.5rem; margin-bottom: 0;">
-                        <li><strong>Document Everything:</strong> Catat setiap preprocessing step untuk reproducibility</li>
-                        <li><strong>Visualize Before & After:</strong> Selalu plot data sebelum dan sesudah cleaning/transformation</li>
-                        <li><strong>Preserve Raw Data:</strong> Jangan overwrite data asli, simpan hasil preprocessing terpisah</li>
-                        <li><strong>Domain Knowledge:</strong> Konsultasi dengan geoscientist untuk validasi data cleaning</li>
-                        <li><strong>Test Multiple Methods:</strong> Compare hasil dari berbagai metode imputation/scaling</li>
-                        <li><strong>Check Distributions:</strong> Pastikan transformasi tidak mengubah informasi penting</li>
-                    </ol>
+                    <strong>✅ Best Practices:</strong>
+                    <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+                        <li>Always plot actual vs predicted values</li>
+                        <li>Analyze residuals untuk check assumptions</li>
+                        <li>Use cross-validation untuk robust estimate</li>
+                        <li>Feature scaling untuk regularized models</li>
+                        <li>Interpret coefficients dalam konteks geofisika</li>
+                    </ul>
                 </div>
 
                 <h3>Resources Tambahan</h3>
@@ -884,23 +837,22 @@ df.to_csv('well_log_clean.csv')</code></pre>
                 <div class="alert alert-success">
                     <strong>📝 Tugas Mingguan:</strong>
                     <ol style="margin-top: 0.5rem; margin-bottom: 0;">
-                        <li>Download sample LAS file dan load menggunakan lasio</li>
-                        <li>Identifikasi dan handle missing values dengan minimal 3 metode berbeda</li>
-                        <li>Detect dan remove outliers, dokumentasikan berapa data yang di-remove</li>
-                        <li>Lakukan normalization dengan StandardScaler dan MinMaxScaler, bandingkan hasilnya</li>
-                        <li>Buat visualization sebelum dan sesudah preprocessing (minimum 4 plots)</li>
-                        <li>Submit Jupyter notebook dengan dokumentasi lengkap</li>
+                        <li>Implementasikan Linear Regression untuk prediksi porositas (PHIT) dari well log</li>
+                        <li>Bandingkan performa Linear vs Polynomial Regression (degree 2, 3, 4)</li>
+                        <li>Apply Ridge dan Lasso regularization, compare hasilnya</li>
+                        <li>Plot actual vs predicted values dan analyze residuals</li>
+                        <li>Calculate dan interpretasi R² score, MAE, dan RMSE untuk setiap model</li>
                     </ol>
                 </div>
 
                 <h3>Persiapan Pertemuan Selanjutnya</h3>
                 
-                <p>Pada pertemuan berikutnya, kita akan membahas <strong>Exploratory Data Analysis (EDA)</strong>. Pastikan Anda sudah:</p>
+                <p>Pada pertemuan berikutnya, kita akan membahas <strong>Evaluasi Model & Tuning</strong>. Pastikan Anda sudah:</p>
                 <ul>
-                    <li>Familiar dengan plotting library: Matplotlib dan Seaborn</li>
-                    <li>Memahami statistik deskriptif dasar (mean, median, std, correlation)</li>
-                    <li>Install library: <code>seaborn</code>, <code>plotly</code> (untuk visualisasi interaktif)</li>
-                    <li>Data yang sudah di-clean dari tugas minggu ini akan digunakan untuk EDA</li>
+                    <li>Memahami konsep overfitting dan underfitting</li>
+                    <li>Familiar dengan cross-validation</li>
+                    <li>Install library untuk hyperparameter tuning</li>
+                    <li>Simpan model-model yang sudah dibuat untuk di-tune minggu depan</li>
                 </ul>
 
                 <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between;">

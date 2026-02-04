@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pertemuan 02: Data Wrangling - ML in Geofisika</title>
+    <title>Pertemuan 03: Exploratory Data Analysis (EDA) - ML in Geofisika</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
@@ -570,8 +570,8 @@
                 <div class="sidebar-title">Materi Pertemuan</div>
                 <ul class="nav-list">
                     <li class="nav-item"><a href="pertemuan-01.html" class="nav-link">01. Introduction ML</a></li>
-                    <li class="nav-item"><a href="pertemuan-02.html" class="nav-link active">02. Data Wrangling</a></li>
-                    <li class="nav-item"><a href="pertemuan-03.html" class="nav-link">03. EDA</a></li>
+                    <li class="nav-item"><a href="pertemuan-02.html" class="nav-link">02. Data Wrangling</a></li>
+                    <li class="nav-item"><a href="pertemuan-03.html" class="nav-link active">03. EDA</a></li>
                     <li class="nav-item"><a href="pertemuan-04.html" class="nav-link">04. Supervised - Klasifikasi</a></li>
                     <li class="nav-item"><a href="pertemuan-05.html" class="nav-link">05. Supervised - Regresi</a></li>
                     <li class="nav-item"><a href="pertemuan-06.html" class="nav-link">06. Evaluasi & Tuning</a></li>
@@ -594,11 +594,11 @@
 
         <main class="main-content">
             <div class="content-header">
-                <h2>Pertemuan 02: Data Wrangling</h2>
+                <h2>Pertemuan 03: Exploratory Data Analysis (EDA)</h2>
                 <div class="content-meta">
                     <div class="meta-item">
                         <span>📅</span>
-                        <span>Minggu ke-2</span>
+                        <span>Minggu ke-3</span>
                     </div>
                     <div class="meta-item">
                         <span>⏱️</span>
@@ -619,11 +619,11 @@
                     </div>
                     <p>Setelah mengikuti pertemuan ini, mahasiswa diharapkan mampu:</p>
                     <ul style="margin-bottom: 0;">
-                        <li>Memahami sumber-sumber data geofisika dan format file yang umum digunakan</li>
-                        <li>Menguasai teknik handling missing values pada well log dan data seismik</li>
-                        <li>Mengimplementasikan data cleaning untuk mengatasi outlier dan noise</li>
-                        <li>Melakukan transformasi data menggunakan library Pandas</li>
-                        <li>Mempersiapkan data geofisika untuk machine learning pipeline</li>
+                        <li>Melakukan visualisasi data geofisika menggunakan Matplotlib dan Seaborn</li>
+                        <li>Menghitung dan menginterpretasi statistik deskriptif dari data well log</li>
+                        <li>Menganalisis distribusi dan korelasi antar variabel geofisika</li>
+                        <li>Mengidentifikasi pattern dan anomali dalam data seismik dan well log</li>
+                        <li>Membuat insight dari exploratory analysis untuk guide modeling decisions</li>
                     </ul>
                 </div>
 
@@ -634,7 +634,7 @@
                             <span>Materi Presentasi</span>
                         </div>
                         <div class="slides-actions">
-                            <a href="https://docs.google.com/presentation/d/1TQbGyRc5A2eAlAlpDTjMD96N0ik2-iJCZRaENLqZDDmyOnBunyhMwXS0VMelcRKQ/edit" 
+                            <a href="https://docs.google.com/presentation/d/1SvmM4cPu8prFE8JQTprzK2WZYPg-M_YX86Hgd9XoZRrpMDThIWzn-7AOP3SWeEtA/edit" 
                                target="_blank" class="btn btn-primary">
                                 <span>🔗</span>
                                 <span>Buka di Google Slides</span>
@@ -647,7 +647,7 @@
                     </div>
                     
                     <div class="slides-embed" id="slidesEmbed">
-                        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTQbGyRc5A2eAlAlpDTjMD96N0ik2-iJCZRaENLqZDDmyOnBunyhMwXS0VMelcRKQ/embed?start=false&loop=false" 
+                        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSvmM4cPu8prFE8JQTprzK2WZYPg-M_YX86Hgd9XoZRrpMDThIWzn-7AOP3SWeEtA/embed?start=false&loop=false" 
                                 frameborder="0" 
                                 allowfullscreen="true" 
                                 mozallowfullscreen="true" 
@@ -663,33 +663,17 @@
 
                 <h3>Ringkasan Materi</h3>
                 
-                <h4>1. Sumber Data Geofisika</h4>
+                <h4>1. Tujuan EDA dalam Geofisika</h4>
                 <p>
-                    Data geofisika berasal dari berbagai sumber pengukuran yang masing-masing memiliki karakteristik dan 
-                    format unik. Memahami sumber data sangat penting untuk preprocessing yang efektif.
+                    EDA adalah langkah krusial untuk memahami karakteristik data geofisika sebelum modeling. Tujuan utama meliputi 
+                    memahami distribusi dan range nilai setiap fitur, mengidentifikasi outlier dan anomali, menemukan korelasi 
+                    antar variabel, dan mendeteksi pattern atau trend dalam data.
                 </p>
-                <ul>
-                    <li><strong>Well Log Data:</strong> Format LAS (Log ASCII Standard), CSV, DLIS - pengukuran 1D sepanjang sumur</li>
-                    <li><strong>Seismic Data:</strong> Format SEG-Y, SEGY - data 2D/3D/4D dengan jutaan trace</li>
-                    <li><strong>Core Data:</strong> Hasil analisis laboratorium dalam format spreadsheet</li>
-                    <li><strong>Production Data:</strong> Time series data produksi minyak, gas, dan air</li>
-                </ul>
-
-                <h4>2. Tantangan Data Geofisika</h4>
+                
+                <h4>2. Statistik Deskriptif</h4>
                 <p>
-                    Data geofisika memiliki tantangan khusus yang harus ditangani sebelum digunakan untuk machine learning:
-                </p>
-                <ul>
-                    <li><strong>Missing Values:</strong> Bad hole sections, sensor failure, incomplete logging</li>
-                    <li><strong>Outliers:</strong> Spike noise, washout zones, tool malfunction</li>
-                    <li><strong>Scale Differences:</strong> Fitur dengan range nilai yang sangat berbeda (GR: 0-200 API, RHOB: 1.5-3.0 g/cc)</li>
-                    <li><strong>Format Inconsistency:</strong> Berbagai vendor dengan format proprietary</li>
-                    <li><strong>Large Volume:</strong> Seismic 3D bisa mencapai terabytes data</li>
-                </ul>
-
-                <h4>3. Teknik Handling Missing Values</h4>
-                <p>
-                    Berbagai strategi untuk menangani missing values pada data geofisika:
+                    Analisis statistik dasar untuk summarize data geofisika mencakup measures of central tendency (mean, median, mode), 
+                    measures of spread (variance, standard deviation, IQR), dan measures of shape (skewness, kurtosis).
                 </p>
 
                 <div class="code-block">
@@ -702,149 +686,127 @@ import numpy as np
 # Load well log data
 df = pd.read_csv('well_log.csv')
 
-# Check missing values
-print(df.isnull().sum())
+# Descriptive statistics
+print(df.describe())
 
-# Strategy 1: Drop rows with missing values (use with caution)
-df_clean = df.dropna()
+# Central tendency
+print(f"Mean GR: {df['GR'].mean():.2f}")
+print(f"Median RHOB: {df['RHOB'].median():.2f}")
+print(f"Mode LITHOLOGY: {df['LITHOLOGY'].mode()[0]}")
 
-# Strategy 2: Forward fill (untuk data sequential seperti depth)
-df['GR_filled'] = df['GR'].fillna(method='ffill')
+# Spread
+print(f"Std Dev GR: {df['GR'].std():.2f}")
+print(f"Variance NPHI: {df['NPHI'].var():.4f}")
+print(f"IQR RHOB: {df['RHOB'].quantile(0.75) - df['RHOB'].quantile(0.25):.2f}")
 
-# Strategy 3: Interpolation (linear, polynomial, spline)
-df['RHOB_interp'] = df['RHOB'].interpolate(method='linear')
-
-# Strategy 4: Fill with median/mean (untuk data non-sequential)
-df['NPHI_filled'] = df['NPHI'].fillna(df['NPHI'].median())
-
-# Strategy 5: Predictive imputation using other features
-from sklearn.impute import KNNImputer
-imputer = KNNImputer(n_neighbors=5)
-df_imputed = pd.DataFrame(
-    imputer.fit_transform(df[['GR', 'RHOB', 'NPHI']]),
-    columns=['GR', 'RHOB', 'NPHI']
-)</code></pre>
+# Shape
+print(f"Skewness GR: {df['GR'].skew():.2f}")
+print(f"Kurtosis RHOB: {df['RHOB'].kurtosis():.2f}")</code></pre>
                 </div>
 
-                <div class="alert alert-warning">
-                    <strong>⚠️ Penting:</strong> Pilihan metode handling missing values bergantung pada: persentase missing data, 
-                    pola missing (random vs systematic), dan tipe analisis yang akan dilakukan. Untuk well log, interpolasi 
-                    sering lebih baik daripada deletion karena data bersifat sequential.
-                </div>
-
-                <h4>4. Data Cleaning: Outlier Detection & Removal</h4>
+                <h4>3. Visualisasi Data Geofisika</h4>
                 <p>
-                    Outlier pada data geofisika bisa disebabkan oleh tool malfunction atau kondisi geologi ekstrem. 
-                    Penting untuk membedakan keduanya sebelum removal.
+                    Visualisasi adalah cara paling efektif untuk memahami data. Berbagai jenis plot yang berguna untuk data geofisika:
+                </p>
+                <ul>
+                    <li><strong>Histogram & Distribution plots:</strong> Memahami distribusi nilai well log</li>
+                    <li><strong>Box plots:</strong> Identifikasi outlier dan quartile ranges</li>
+                    <li><strong>Scatter plots:</strong> Analisis hubungan antar fitur (crossplot)</li>
+                    <li><strong>Correlation heatmap:</strong> Matrix korelasi antar semua fitur</li>
+                    <li><strong>Time series plots:</strong> Trend sepanjang depth atau time</li>
+                    <li><strong>Pair plots:</strong> Multiple scatter plots untuk quick comparison</li>
+                </ul>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                    </div>
+                    <pre><code>import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Set style
+sns.set_style("whitegrid")
+plt.rcParams['figure.figsize'] = (12, 8)
+
+# 1. Histogram
+plt.subplot(2, 3, 1)
+plt.hist(df['GR'], bins=50, edgecolor='black', alpha=0.7)
+plt.xlabel('Gamma Ray (API)')
+plt.ylabel('Frequency')
+plt.title('GR Distribution')
+
+# 2. Box Plot
+plt.subplot(2, 3, 2)
+df[['GR', 'RHOB', 'NPHI']].boxplot()
+plt.ylabel('Values')
+plt.title('Box Plot Comparison')
+
+# 3. Scatter Plot (Crossplot)
+plt.subplot(2, 3, 3)
+plt.scatter(df['NPHI'], df['RHOB'], alpha=0.5, c=df['PHIT'], cmap='viridis')
+plt.xlabel('Neutron Porosity')
+plt.ylabel('Bulk Density')
+plt.colorbar(label='Total Porosity')
+plt.title('NPHI vs RHOB Crossplot')
+
+# 4. Correlation Heatmap
+plt.subplot(2, 3, 4)
+corr_matrix = df[['GR', 'RHOB', 'NPHI', 'DT', 'PHIT']].corr()
+sns.heatmap(corr_matrix, annot=True, fmt='.2f', cmap='coolwarm', center=0)
+plt.title('Correlation Matrix')
+
+# 5. Depth Plot (Log Plot)
+plt.subplot(2, 3, 5)
+plt.plot(df['GR'], df['DEPTH'])
+plt.gca().invert_yaxis()
+plt.xlabel('GR (API)')
+plt.ylabel('Depth (m)')
+plt.title('Gamma Ray Log')
+
+# 6. Pair Plot (using seaborn)
+# sns.pairplot(df[['GR', 'RHOB', 'NPHI', 'LITHOLOGY']], hue='LITHOLOGY')
+
+plt.tight_layout()
+plt.show()</code></pre>
+                </div>
+
+                <h4>4. Analisis Korelasi</h4>
+                <p>
+                    Pemahaman hubungan antar variabel geofisika penting untuk feature selection. Pearson correlation mengukur 
+                    linear relationship, Spearman correlation untuk monotonic relationship, dan domain knowledge untuk interpretasi 
+                    fisik korelasi.
                 </p>
 
                 <div class="code-block">
                     <div class="code-header">
                         <span class="code-lang">Python</span>
                     </div>
-                    <pre><code># Method 1: Statistical approach (Z-score)
-from scipy import stats
-z_scores = np.abs(stats.zscore(df['GR']))
-df_no_outliers = df[z_scores < 3]  # Remove data beyond 3 std
+                    <pre><code>from scipy.stats import pearsonr, spearmanr
 
-# Method 2: IQR (Interquartile Range)
-Q1 = df['RHOB'].quantile(0.25)
-Q3 = df['RHOB'].quantile(0.75)
-IQR = Q3 - Q1
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
-df_filtered = df[(df['RHOB'] >= lower_bound) & (df['RHOB'] <= upper_bound)]
+# Pearson correlation (linear)
+corr_pearson, p_value = pearsonr(df['NPHI'], df['PHIT'])
+print(f"Pearson correlation NPHI-PHIT: {corr_pearson:.3f} (p={p_value:.4f})")
 
-# Method 3: Domain knowledge (physics-based constraints)
-# For RHOB (bulk density), physically impossible values
-df_clean = df[(df['RHOB'] > 1.0) & (df['RHOB'] < 3.5)]
+# Spearman correlation (monotonic)
+corr_spearman, p_value = spearmanr(df['GR'], df['VCLAY'])
+print(f"Spearman correlation GR-VCLAY: {corr_spearman:.3f} (p={p_value:.4f})")
 
-# Method 4: Isolation Forest (ML-based outlier detection)
-from sklearn.ensemble import IsolationForest
-iso_forest = IsolationForest(contamination=0.1, random_state=42)
-outlier_labels = iso_forest.fit_predict(df[['GR', 'RHOB', 'NPHI']])
-df_clean = df[outlier_labels == 1]  # Keep only inliers</code></pre>
-                </div>
+# Full correlation matrix
+features = ['GR', 'RHOB', 'NPHI', 'DT', 'RESDEEP']
+corr_matrix = df[features].corr()
 
-                <h4>5. Data Transformation & Normalization</h4>
-                <p>
-                    Transformasi data diperlukan untuk membuat fitur-fitur geofisika comparable dan meningkatkan performa model ML.
-                </p>
+# Find highly correlated pairs (>0.7)
+high_corr = []
+for i in range(len(corr_matrix.columns)):
+    for j in range(i+1, len(corr_matrix.columns)):
+        if abs(corr_matrix.iloc[i, j]) > 0.7:
+            high_corr.append((corr_matrix.columns[i], 
+                            corr_matrix.columns[j], 
+                            corr_matrix.iloc[i, j]))
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python</span>
-                    </div>
-                    <pre><code>from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
-
-# StandardScaler: mean=0, std=1 (sensitive to outliers)
-scaler = StandardScaler()
-df_scaled = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
-
-# MinMaxScaler: scale to [0,1] range
-scaler = MinMaxScaler()
-df_normalized = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
-
-# RobustScaler: uses median and IQR (robust to outliers)
-scaler = RobustScaler()
-df_robust = scaler.fit_transform(df[['GR', 'RHOB', 'NPHI']])
-
-# Log transformation (for skewed data)
-df['GR_log'] = np.log1p(df['GR'])  # log1p = log(1+x) to handle zeros
-
-# Box-Cox transformation (requires positive values)
-from scipy.stats import boxcox
-df['RHOB_boxcox'], lambda_param = boxcox(df['RHOB'])</code></pre>
-                </div>
-
-                <h4>6. Working with LAS Files</h4>
-                <p>
-                    LAS (Log ASCII Standard) adalah format standar industri untuk well log. Python library <code>lasio</code> 
-                    memudahkan pembacaan dan manipulasi file LAS.
-                </p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">Python</span>
-                    </div>
-                    <pre><code>import lasio
-
-# Read LAS file
-las = lasio.read('well_data.las')
-
-# Access well information
-print(f"Well Name: {las.well.WELL.value}")
-print(f"Field: {las.well.FLD.value}")
-print(f"Start Depth: {las.well.STRT.value} {las.well.STRT.unit}")
-
-# Convert to pandas DataFrame
-df = las.df()
-print(df.head())
-
-# Access specific curves
-gr_curve = las.curves['GR']
-print(f"GR units: {gr_curve.unit}")
-print(f"GR description: {gr_curve.descr}")
-
-# Filter by depth range
-df_filtered = df[(df.index >= 2000) & (df.index <= 3000)]
-
-# Export to CSV
-df.to_csv('well_log_clean.csv')</code></pre>
-                </div>
-
-                <h3>Best Practices</h3>
-
-                <div class="alert alert-success">
-                    <strong>✅ Tips Data Wrangling untuk Geofisika:</strong>
-                    <ol style="margin-top: 0.5rem; margin-bottom: 0;">
-                        <li><strong>Document Everything:</strong> Catat setiap preprocessing step untuk reproducibility</li>
-                        <li><strong>Visualize Before & After:</strong> Selalu plot data sebelum dan sesudah cleaning/transformation</li>
-                        <li><strong>Preserve Raw Data:</strong> Jangan overwrite data asli, simpan hasil preprocessing terpisah</li>
-                        <li><strong>Domain Knowledge:</strong> Konsultasi dengan geoscientist untuk validasi data cleaning</li>
-                        <li><strong>Test Multiple Methods:</strong> Compare hasil dari berbagai metode imputation/scaling</li>
-                        <li><strong>Check Distributions:</strong> Pastikan transformasi tidak mengubah informasi penting</li>
-                    </ol>
+print("\nHighly correlated pairs:")
+for feat1, feat2, corr in high_corr:
+    print(f"{feat1} - {feat2}: {corr:.3f}")</code></pre>
                 </div>
 
                 <h3>Resources Tambahan</h3>
@@ -852,9 +814,9 @@ df.to_csv('well_log_clean.csv')</code></pre>
                 <div class="resources-grid">
                     <div class="resource-card">
                         <div class="resource-icon">📚</div>
-                        <h4>Pandas Documentation</h4>
-                        <p>Official docs untuk data manipulation</p>
-                        <a href="https://pandas.pydata.org/docs/" class="resource-link" target="_blank">Visit →</a>
+                        <h4>Seaborn Gallery</h4>
+                        <p>Contoh visualisasi data</p>
+                        <a href="https://seaborn.pydata.org/examples/" class="resource-link" target="_blank">Visit →</a>
                     </div>
                     
                     <div class="resource-card">
@@ -904,7 +866,7 @@ df.to_csv('well_log_clean.csv')</code></pre>
                 </ul>
 
                 <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between;">
-                    <a href="pertemuan-01.html" style="color: var(--accent-primary); text-decoration: none;">← Previous: Introduction ML</a>
+                    <a href="pertemuan-02.html" style="color: var(--accent-primary); text-decoration: none;">← Previous: Data Wrangling</a>
                     <a href="pertemuan-03.html" style="color: var(--accent-primary); text-decoration: none;">Next: EDA →</a>
                 </div>
             </div>
