@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum 01: Data Wrangling & EDA - ML in Geofisika</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #151922;
+            --bg-tertiary: #1e2530;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #7c3aed;
+            --text-primary: #e8edf4;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --border: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --code-bg: #0d1117;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Serif', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 217, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .logo-text {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .nav-link {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-family: 'Manrope', sans-serif;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .main-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+            border-radius: 16px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-family: 'Manrope', sans-serif;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hero h1 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .hero-description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-meta {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .toc {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .toc-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-primary);
+        }
+        
+        .toc-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .toc-item a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-family: 'Manrope', sans-serif;
+            transition: all 0.2s;
+        }
+        
+        .toc-item a:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+        
+        .toc-number {
+            width: 24px;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .section-number {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .section-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .subsection-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin: 1.5rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .content-text {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .content-text p {
+            margin-bottom: 1rem;
+        }
+        
+        .content-text strong {
+            color: var(--text-primary);
+        }
+        
+        .content-text ul, .content-text ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .content-text li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-box.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .info-box.success {
+            border-left-color: var(--success);
+        }
+        
+        .info-box-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .info-box p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-box ul {
+            margin-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .info-box li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Notebook Cell Styling - Key Component */
+        .notebook-cell {
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+        
+        .cell-header {
+            background: var(--bg-tertiary);
+            padding: 0.6rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .cell-type {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            font-family: 'Manrope', sans-serif;
+            color: var(--text-muted);
+        }
+        
+        .cell-type-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            background: var(--success);
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+        
+        .cell-number {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .cell-code {
+            background: var(--code-bg);
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+        }
+        
+        .cell-code pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .cell-output {
+            background: var(--bg-secondary);
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .cell-output pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        
+        .cell-output img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        /* Syntax Highlighting */
+        .keyword { color: #ff79c6; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; font-style: italic; }
+        .function { color: #50fa7b; }
+        .number { color: #bd93f9; }
+        .variable { color: #8be9fd; }
+        .module { color: #8be9fd; }
+        
+        /* Data Table */
+        .data-table-container {
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .data-table th {
+            background: var(--bg-tertiary);
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent-primary);
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+        
+        .data-table td {
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        
+        .data-table tr:hover td {
+            background: var(--bg-tertiary);
+        }
+        
+        .data-table .index {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+        }
+        
+        .stat-value {
+            font-family: 'Manrope', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        /* Parameter Grid */
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .param-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .param-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+        }
+        
+        .param-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .param-info h4 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--accent-primary);
+        }
+        
+        .param-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        /* Objectives Box */
+        .objectives-box {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.05), rgba(124, 58, 237, 0.05));
+            border: 1px solid var(--accent-primary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .objectives-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-primary);
+        }
+        
+        .objectives-list {
+            list-style: none;
+        }
+        
+        .objectives-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        
+        .objectives-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        /* Exercise Box */
+        .exercise-box {
+            background: var(--bg-secondary);
+            border: 2px dashed var(--warning);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .exercise-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--warning);
+        }
+        
+        .exercise-list {
+            list-style: decimal;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .exercise-list li {
+            padding: 0.4rem 0;
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .footer-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .footer-nav {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .footer-link {
+            padding: 0.6rem 1.2rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-family: 'Manrope', sans-serif;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .footer-link:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+        
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .hero {
+                padding: 2rem 1.5rem;
+            }
+            
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .toc-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .stats-grid,
+            .param-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo"><div class="logo-icon">ML</div><span class="logo-text">ML in Geofisika</span></a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="index.html#materi" class="nav-link">📚 Materi</a>
+                <a href="index.html#praktikum" class="nav-link">🔬 Praktikum</a>
+            </nav>
+        </div>
+    </header>
+    <main class="main-container">
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge"><span>🔬</span><span>Modul Praktikum 01</span></div>
+                <h1>Data Wrangling & Exploratory Data Analysis</h1>
+                <p class="hero-description">Hands-on preprocessing dan eksplorasi data drilling menggunakan Python. Pelajari teknik pembersihan data, transformasi, dan visualisasi untuk analisis geofisika.</p>
+                <div class="hero-meta">
+                    <div class="hero-meta-item"><span>⏱️</span><span>3 × 50 menit</span></div>
+                    <div class="hero-meta-item"><span>📊</span><span>Dataset: Drilling/MWD Data</span></div>
+                    <div class="hero-meta-item"><span>🐍</span><span>Python, Pandas, Matplotlib</span></div>
+                </div>
+            </div>
+        </section>
+        <div class="objectives-box">
+            <div class="objectives-title"><span>🎯</span><span>Tujuan Pembelajaran</span></div>
+            <ul class="objectives-list">
+                <li>Melakukan loading dan inspeksi data drilling dengan Python</li>
+                <li>Mengidentifikasi dan menangani missing values & duplikat</li>
+                <li>Melakukan transformasi dan feature engineering pada data geofisika</li>
+                <li>Membuat visualisasi data geofisika (well log style plot)</li>
+                <li>Menganalisis korelasi antar parameter drilling</li>
+                <li>Menginterpretasikan hasil EDA dalam konteks geofisika</li>
+            </ul>
+        </div>
+        <nav class="toc">
+            <div class="toc-title"><span>📑</span><span>Daftar Isi</span></div>
+            <ul class="toc-list">
+                <li class="toc-item"><a href="#s1"><span class="toc-number">1</span>Pendahuluan & Dataset</a></li>
+                <li class="toc-item"><a href="#s2"><span class="toc-number">2</span>Loading & Inspeksi Data</a></li>
+                <li class="toc-item"><a href="#s3"><span class="toc-number">3</span>Handling Missing Values</a></li>
+                <li class="toc-item"><a href="#s4"><span class="toc-number">4</span>Handling Duplicates</a></li>
+                <li class="toc-item"><a href="#s5"><span class="toc-number">5</span>Data Transformation</a></li>
+                <li class="toc-item"><a href="#s6"><span class="toc-number">6</span>Statistik Deskriptif</a></li>
+                <li class="toc-item"><a href="#s7"><span class="toc-number">7</span>Visualisasi Data</a></li>
+                <li class="toc-item"><a href="#s8"><span class="toc-number">8</span>Analisis Korelasi</a></li>
+                <li class="toc-item"><a href="#s9"><span class="toc-number">9</span>Insight & Kesimpulan</a></li>
+                <li class="toc-item"><a href="#s10"><span class="toc-number">10</span>Latihan Mandiri</a></li>
+            </ul>
+        </nav>
+        <section id="s1" class="section">
+            <div class="section-header"><div class="section-number">1</div><h2 class="section-title">Pendahuluan & Dataset</h2></div>
+            <div class="content-text">
+                <p>Pada praktikum ini, kita akan bekerja dengan <strong>data drilling/MWD (Measurement While Drilling)</strong> dari operasi pengeboran sumur minyak dan gas. Data MWD sangat penting dalam industri migas karena memberikan informasi real-time tentang kondisi pengeboran dan karakteristik formasi batuan.</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value">2,060</div><div class="stat-label">Data Points</div></div>
+                <div class="stat-card"><div class="stat-value">14</div><div class="stat-label">Parameter</div></div>
+                <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Formasi</div></div>
+                <div class="stat-card"><div class="stat-value">2,057 m</div><div class="stat-label">Interval Kedalaman</div></div>
+            </div>
+            <h3 class="subsection-title">📋 Deskripsi Parameter</h3>
+            <div class="param-grid">
+                <div class="param-card"><div class="param-icon">📏</div><div class="param-info"><h4>TMD / TVD (m)</h4><p>True Measured Depth / True Vertical Depth</p></div></div>
+                <div class="param-card"><div class="param-icon">⚡</div><div class="param-info"><h4>ROP (m/hr)</h4><p>Rate of Penetration - Kecepatan pengeboran</p></div></div>
+                <div class="param-card"><div class="param-icon">⚖️</div><div class="param-info"><h4>WOB (ton)</h4><p>Weight on Bit - Beban pada mata bor</p></div></div>
+                <div class="param-card"><div class="param-icon">💧</div><div class="param-info"><h4>FR (gpm)</h4><p>Flow Rate - Laju alir lumpur pemboran</p></div></div>
+                <div class="param-card"><div class="param-icon">🔴</div><div class="param-info"><h4>SPP (psi)</h4><p>Standpipe Pressure - Tekanan pipa tegak</p></div></div>
+                <div class="param-card"><div class="param-icon">🔄</div><div class="param-info"><h4>RPM (rpm)</h4><p>Rotation per Minute - Kecepatan putaran</p></div></div>
+                <div class="param-card"><div class="param-icon">🔧</div><div class="param-info"><h4>TQ (lb.ft)</h4><p>Torque - Momen putar</p></div></div>
+                <div class="param-card"><div class="param-icon">🧪</div><div class="param-info"><h4>MW IN/OUT (ppg)</h4><p>Mud Weight - Densitas lumpur masuk/keluar</p></div></div>
+            </div>
+        </section>
+        <section id="s2" class="section">
+            <div class="section-header"><div class="section-number">2</div><h2 class="section-title">Loading & Inspeksi Data</h2></div>
+            <div class="content-text"><p>Langkah pertama adalah memuat data dan memahami strukturnya menggunakan <strong>Pandas</strong>.</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[1]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Import library yang diperlukan</span>
+<span class="keyword">import</span> <span class="module">pandas</span> <span class="keyword">as</span> <span class="variable">pd</span>
+<span class="keyword">import</span> <span class="module">numpy</span> <span class="keyword">as</span> <span class="variable">np</span>
+<span class="keyword">import</span> <span class="module">matplotlib.pyplot</span> <span class="keyword">as</span> <span class="variable">plt</span>
+<span class="keyword">import</span> <span class="module">seaborn</span> <span class="keyword">as</span> <span class="variable">sns</span>
+
+plt.<span class="function">style</span>.<span class="function">use</span>(<span class="string">'dark_background'</span>)
+<span class="function">print</span>(<span class="string">"✅ Library berhasil di-import!"</span>)</pre></div>
+                <div class="cell-output"><pre>✅ Library berhasil di-import!</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[2]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Membaca dataset</span>
+<span class="variable">df</span> = pd.<span class="function">read_csv</span>(<span class="string">'Well_Dataset.csv'</span>)
+<span class="function">print</span>(<span class="string">f"📊 Dimensi Data: {df.shape[0]:,} baris × {df.shape[1]} kolom"</span>)</pre></div>
+                <div class="cell-output"><pre>📊 Dimensi Data: 2,060 baris × 14 kolom</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[3]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Melihat 5 baris pertama</span>
+<span class="variable">df</span>.<span class="function">head</span>()</pre></div>
+                <div class="cell-output">
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead><tr><th></th><th>Formation</th><th>TMD</th><th>TVD</th><th>ROP</th><th>WOB</th><th>FR</th><th>SPP</th><th>RPM</th><th>TQ</th><th>MW IN</th><th>MW OUT</th></tr></thead>
+                            <tbody>
+                                <tr><td class="index">0</td><td>Seno</td><td>428</td><td>428.01</td><td>33.3</td><td>3</td><td>514.3</td><td>818</td><td>70.0</td><td>1915.0</td><td>10.4</td><td>10.401</td></tr>
+                                <tr><td class="index">1</td><td>Seno</td><td>428</td><td>428.01</td><td>33.3</td><td>3</td><td>514.3</td><td>818</td><td>70.0</td><td>1915.0</td><td>10.4</td><td>10.401</td></tr>
+                                <tr><td class="index">2</td><td>Seno</td><td>429</td><td>429.01</td><td>39.3</td><td>4</td><td>428.8</td><td>554</td><td>79.0</td><td>2383.0</td><td>10.4</td><td>10.403</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[4]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Melihat formasi unik</span>
+<span class="function">print</span>(<span class="string">"🏷️ Formasi yang Ditembus:"</span>)
+<span class="keyword">for</span> f <span class="keyword">in</span> <span class="variable">df</span>[<span class="string">'Formation'</span>].<span class="function">unique</span>():
+    <span class="function">print</span>(<span class="string">f"  • {f}: {len(df[df['Formation']==f]):,} pts"</span>)</pre></div>
+                <div class="cell-output"><pre>🏷️ Formasi yang Ditembus:
+  • Seno: 342 pts
+  • Turo: 89 pts
+  • Ceno: 203 pts
+  • Albi: 213 pts
+  • Apti: 36 pts
+  • Barre: 411 pts
+  • Neo: 265 pts
+  • Malcolm: 205 pts
+  • Eren Shale: 252 pts
+  • Mikasa Anhydrite: 44 pts</pre></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>💡</span><span>Insight</span></div><p>Dataset memiliki 2,060 data points dengan 14 kolom. Terdapat 2 kolom dengan missing values (RPM dan TQ masing-masing 1 data).</p></div>
+        </section>
+        <section id="s3" class="section">
+            <div class="section-header"><div class="section-number">3</div><h2 class="section-title">Handling Missing Values</h2></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[5]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Identifikasi missing values</span>
+<span class="variable">missing</span> = <span class="variable">df</span>.<span class="function">isnull</span>().<span class="function">sum</span>()
+<span class="function">print</span>(<span class="string">"❓ Missing Values:"</span>)
+<span class="keyword">for</span> col <span class="keyword">in</span> <span class="variable">df</span>.columns:
+    <span class="keyword">if</span> <span class="variable">missing</span>[col] > <span class="number">0</span>:
+        <span class="function">print</span>(<span class="string">f"  ⚠️ {col}: {missing[col]}"</span>)</pre></div>
+                <div class="cell-output"><pre>❓ Missing Values:
+  ⚠️ RPM (rpm): 1
+  ⚠️ TQ (lb.ft): 1</pre></div>
+            </div>
+            <div class="cell-output" style="background:var(--bg-secondary);padding:1rem;border-radius:8px;margin-bottom:1.5rem">
+                <img src="asset/praktikum/" alt="Missing Values">
+                <p style="text-align:center;font-size:.85rem;color:var(--text-muted);margin-top:.75rem">Gambar 1. Visualisasi Missing Values per Kolom</p>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[6]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Interpolasi linear untuk mengisi missing values</span>
+<span class="variable">df</span>[<span class="string">'RPM (rpm)'</span>] = <span class="variable">df</span>[<span class="string">'RPM (rpm)'</span>].<span class="function">interpolate</span>(method=<span class="string">'linear'</span>)
+<span class="variable">df</span>[<span class="string">'TQ (lb.ft)'</span>] = <span class="variable">df</span>[<span class="string">'TQ (lb.ft)'</span>].<span class="function">interpolate</span>(method=<span class="string">'linear'</span>)
+
+<span class="function">print</span>(<span class="string">"✅ Missing values setelah interpolasi: 0"</span>)</pre></div>
+                <div class="cell-output"><pre>✅ Missing values setelah interpolasi: 0</pre></div>
+            </div>
+            <div class="info-box success"><div class="info-box-title"><span>✅</span><span>Best Practice</span></div><p>Untuk data time-series, <strong>interpolasi linear</strong> adalah pilihan yang baik karena mempertahankan kontinuitas data.</p></div>
+        </section>
+        <section id="s4" class="section">
+            <div class="section-header"><div class="section-number">4</div><h2 class="section-title">Handling Duplicates</h2></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[7]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Menghitung dan menghapus duplikat</span>
+<span class="variable">duplicates</span> = <span class="variable">df</span>.<span class="function">duplicated</span>().<span class="function">sum</span>()
+<span class="function">print</span>(<span class="string">f"🔍 Jumlah baris duplikat: {duplicates}"</span>)
+
+<span class="variable">df</span> = <span class="variable">df</span>.<span class="function">drop_duplicates</span>(keep=<span class="string">'first'</span>).<span class="function">reset_index</span>(drop=<span class="keyword">True</span>)
+<span class="function">print</span>(<span class="string">f"📊 Jumlah baris setelah cleaning: {len(df):,}"</span>)</pre></div>
+                <div class="cell-output"><pre>🔍 Jumlah baris duplikat: 2
+📊 Jumlah baris setelah cleaning: 2,058</pre></div>
+            </div>
+        </section>
+        <section id="s5" class="section">
+            <div class="section-header"><div class="section-number">5</div><h2 class="section-title">Data Transformation & Feature Engineering</h2></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[8]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Konversi datetime</span>
+<span class="variable">df</span>[<span class="string">'DATE TIME'</span>] = pd.<span class="function">to_datetime</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], format=<span class="string">'%d/%m/%Y %H.%M.%S'</span>)
+
+<span class="function">print</span>(<span class="string">"📅 Rentang Waktu:"</span>)
+<span class="function">print</span>(<span class="string">f"   Mulai  : {df['DATE TIME'].min()}"</span>)
+<span class="function">print</span>(<span class="string">f"   Selesai: {df['DATE TIME'].max()}"</span>)</pre></div>
+                <div class="cell-output"><pre>📅 Rentang Waktu:
+   Mulai  : 2010-06-19 07:12:15
+   Selesai: 2010-06-23 01:37:16</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[9]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Feature Engineering</span>
+<span class="variable">df</span>[<span class="string">'MW_DIFF'</span>] = <span class="variable">df</span>[<span class="string">'MW OUT (ppg)'</span>] - <span class="variable">df</span>[<span class="string">'MW IN (ppg)'</span>]
+
+<span class="variable">df</span>[<span class="string">'DEPTH_CAT'</span>] = pd.<span class="function">cut</span>(<span class="variable">df</span>[<span class="string">'TVD (m)'</span>],
+    bins=[<span class="number">0</span>, <span class="number">1000</span>, <span class="number">1500</span>, <span class="number">2000</span>, <span class="number">3000</span>],
+    labels=[<span class="string">'Shallow'</span>, <span class="string">'Medium'</span>, <span class="string">'Deep'</span>, <span class="string">'Very Deep'</span>])
+
+<span class="variable">df</span>[<span class="string">'FORMATION_CODE'</span>] = <span class="variable">df</span>[<span class="string">'Formation'</span>].<span class="function">astype</span>(<span class="string">'category'</span>).cat.codes
+
+<span class="function">print</span>(<span class="string">"✅ Feature baru: MW_DIFF, DEPTH_CAT, FORMATION_CODE"</span>)</pre></div>
+                <div class="cell-output"><pre>✅ Feature baru: MW_DIFF, DEPTH_CAT, FORMATION_CODE</pre></div>
+            </div>
+        </section>
+        <section id="s6" class="section">
+            <div class="section-header"><div class="section-number">6</div><h2 class="section-title">Statistik Deskriptif</h2></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[10]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Statistik deskriptif</span>
+<span class="variable">df</span>[[<span class="string">'ROP (m/hr)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>]].<span class="function">describe</span>().<span class="function">round</span>(<span class="number">2</span>)</pre></div>
+                <div class="cell-output">
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead><tr><th></th><th>ROP (m/hr)</th><th>WOB (ton)</th><th>RPM (rpm)</th><th>TQ (lb.ft)</th></tr></thead>
+                            <tbody>
+                                <tr><td class="index">count</td><td>2058.00</td><td>2058.00</td><td>2058.00</td><td>2058.00</td></tr>
+                                <tr><td class="index">mean</td><td>72.53</td><td>8.74</td><td>156.32</td><td>9212.15</td></tr>
+                                <tr><td class="index">std</td><td>32.63</td><td>3.59</td><td>23.92</td><td>3172.58</td></tr>
+                                <tr><td class="index">min</td><td>3.10</td><td>0.00</td><td>70.00</td><td>784.00</td></tr>
+                                <tr><td class="index">50%</td><td>67.20</td><td>9.00</td><td>158.00</td><td>9148.00</td></tr>
+                                <tr><td class="index">max</td><td>203.20</td><td>22.00</td><td>199.00</td><td>19822.00</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[11]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Rata-rata ROP per formasi</span>
+<span class="variable">rop_by_formation</span> = <span class="variable">df</span>.<span class="function">groupby</span>(<span class="string">'Formation'</span>)[<span class="string">'ROP (m/hr)'</span>].<span class="function">mean</span>().<span class="function">sort_values</span>(ascending=<span class="keyword">False</span>)
+<span class="function">print</span>(<span class="variable">rop_by_formation</span>.<span class="function">round</span>(<span class="number">2</span>))</pre></div>
+                <div class="cell-output"><pre>Formation
+Neo                  93.17
+Albi                 88.93
+Ceno                 84.38
+Turo                 82.47
+Seno                 67.63
+Barre                66.43
+Malcolm              54.48
+Eren Shale           41.16
+Apti                 35.44
+Mikasa Anhydrite     21.73</pre></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>🔍</span><span>Interpretasi</span></div><p>Formasi <strong>Neo</strong> memiliki ROP tertinggi (93.17 m/hr) = formasi lunak. <strong>Mikasa Anhydrite</strong> ROP terendah (21.73 m/hr) = batuan sangat keras.</p></div>
+        </section>
+        <section id="s7" class="section">
+            <div class="section-header"><div class="section-number">7</div><h2 class="section-title">Visualisasi Data</h2></div>
+            <h3 class="subsection-title">📊 7.1 Distribusi Parameter</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[12]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Histogram distribusi parameter drilling</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">2</span>, <span class="number">3</span>, figsize=(<span class="number">14</span>, <span class="number">8</span>))
+<span class="variable">params</span> = [<span class="string">'ROP'</span>, <span class="string">'WOB'</span>, <span class="string">'RPM'</span>, <span class="string">'TQ'</span>, <span class="string">'SPP'</span>, <span class="string">'FR'</span>]
+<span class="keyword">for</span> ax, param <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>.<span class="function">flatten</span>(), <span class="variable">params</span>):
+    ax.<span class="function">hist</span>(<span class="variable">df</span>[param], bins=<span class="number">30</span>, color=<span class="string">'#e94560'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum/fig_histogram.png" alt="Histogram"></div>
+            </div>
+            <h3 class="subsection-title">📦 7.2 Boxplot per Formasi</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[13]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Boxplot per formasi</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">2</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">10</span>))
+<span class="keyword">for</span> ax, param <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>.<span class="function">flatten</span>(), [<span class="string">'ROP'</span>, <span class="string">'WOB'</span>, <span class="string">'RPM'</span>, <span class="string">'TQ'</span>]):
+    <span class="variable">df</span>.<span class="function">boxplot</span>(column=param, by=<span class="string">'Formation'</span>, ax=ax)
+plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum/fig_boxplot.png" alt="Boxplot"></div>
+            </div>
+            <h3 class="subsection-title">📈 7.3 Well Log Style Plot</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[14]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Well Log Style Plot - Parameter vs Kedalaman</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">5</span>, figsize=(<span class="number">16</span>, <span class="number">12</span>), sharey=<span class="keyword">True</span>)
+<span class="variable">params</span> = [<span class="string">'ROP'</span>, <span class="string">'WOB'</span>, <span class="string">'RPM'</span>, <span class="string">'TQ'</span>, <span class="string">'SPP'</span>]
+<span class="keyword">for</span> ax, param <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>, <span class="variable">params</span>):
+    ax.<span class="function">plot</span>(<span class="variable">df</span>[param], <span class="variable">df</span>[<span class="string">'TVD'</span>])
+    ax.<span class="function">fill_betweenx</span>(<span class="variable">df</span>[<span class="string">'TVD'</span>], <span class="number">0</span>, <span class="variable">df</span>[param], alpha=<span class="number">0.3</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">invert_yaxis</span>()
+plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum/fig_welllog.png" alt="Well Log"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>📊</span><span>Membaca Well Log Plot</span></div><p>Well log plot menampilkan parameter vs kedalaman (sumbu Y terbalik). Perubahan mendadak sering mengindikasikan <strong>batas formasi</strong>.</p></div>
+            <h3 class="subsection-title">🥧 7.4 Distribusi Formasi</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[15]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Distribusi dan rata-rata ROP per formasi</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">6</span>))
+<span class="variable">df</span>[<span class="string">'Formation'</span>].<span class="function">value_counts</span>().<span class="function">plot</span>.<span class="function">pie</span>(ax=<span class="variable">axes</span>[<span class="number">0</span>], autopct=<span class="string">'%1.1f%%'</span>)
+<span class="variable">df</span>.<span class="function">groupby</span>(<span class="string">'Formation'</span>)[<span class="string">'ROP'</span>].<span class="function">mean</span>().<span class="function">sort_values</span>().<span class="function">plot</span>.<span class="function">barh</span>(ax=<span class="variable">axes</span>[<span class="number">1</span>])
+plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum/fig_formation.png" alt="Formation"></div>
+            </div>
+            <h3 class="subsection-title">📅 7.5 Time Series</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[16]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Time series plot</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">3</span>, <span class="number">1</span>, figsize=(<span class="number">14</span>, <span class="number">10</span>), sharex=<span class="keyword">True</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'ROP'</span>], color=<span class="string">'#e94560'</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'WOB'</span>], color=<span class="string">'#00d9ff'</span>)
+<span class="variable">axes</span>[<span class="number">2</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'TQ'</span>], color=<span class="string">'#4ecdc4'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum/fig_timeseries.png" alt="Time Series"></div>
+            </div>
+        </section>
+        <section id="s8" class="section">
+            <div class="section-header"><div class="section-number">8</div><h2 class="section-title">Analisis Korelasi</h2></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[17]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Correlation heatmap</span>
+<span class="variable">cols</span> = [<span class="string">'ROP'</span>, <span class="string">'WOB'</span>, <span class="string">'FR'</span>, <span class="string">'SPP'</span>, <span class="string">'RPM'</span>, <span class="string">'TQ'</span>, <span class="string">'TVD'</span>]
+<span class="variable">corr</span> = <span class="variable">df</span>[<span class="variable">cols</span>].<span class="function">corr</span>()
+plt.<span class="function">figure</span>(figsize=(<span class="number">12</span>, <span class="number">10</span>))
+sns.<span class="function">heatmap</span>(<span class="variable">corr</span>, annot=<span class="keyword">True</span>, cmap=<span class="string">'RdBu_r'</span>, center=<span class="number">0</span>)
+plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum/fig_correlation.png" alt="Correlation"></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[18]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Scatter plots</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">3</span>, figsize=(<span class="number">15</span>, <span class="number">5</span>))
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'WOB'</span>], <span class="variable">df</span>[<span class="string">'ROP'</span>], c=<span class="variable">df</span>[<span class="string">'TVD'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'RPM'</span>], <span class="variable">df</span>[<span class="string">'ROP'</span>], c=<span class="variable">df</span>[<span class="string">'TVD'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
+<span class="variable">axes</span>[<span class="number">2</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'WOB'</span>], <span class="variable">df</span>[<span class="string">'TQ'</span>], c=<span class="variable">df</span>[<span class="string">'TVD'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum/fig_scatter.png" alt="Scatter"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>🔍</span><span>Interpretasi Korelasi</span></div><p>• <strong>SPP vs TVD (+0.81)</strong>: Tekanan meningkat dengan kedalaman<br>• <strong>TQ vs WOB (+0.36)</strong>: Torsi meningkat dengan beban<br>• <strong>ROP vs TVD (-0.43)</strong>: ROP menurun dengan kedalaman (formasi makin keras)</p></div>
+        </section>
+        <section id="s9" class="section">
+            <div class="section-header"><div class="section-number">9</div><h2 class="section-title">Insight & Kesimpulan</h2></div>
+            <div class="info-box success">
+                <div class="info-box-title"><span>📊</span><span>Ringkasan Temuan</span></div>
+                <p><strong>1. Kualitas Data</strong><br>Dataset relatif bersih dengan hanya 2 missing values (0.05%) dan 2 duplikat. Setelah cleaning: 2,058 baris.</p>
+                <p><strong>2. Karakteristik Formasi</strong><br>
+                • <strong>Formasi Lunak</strong>: Neo, Albi, Ceno, Turo (ROP > 80 m/hr)<br>
+                • <strong>Formasi Sedang</strong>: Seno, Barre (ROP 60-70 m/hr)<br>
+                • <strong>Formasi Keras</strong>: Malcolm, Eren Shale, Apti, Mikasa Anhydrite (ROP < 55 m/hr)</p>
+                <p><strong>3. Hubungan Parameter</strong><br>SPP berkorelasi kuat dengan kedalaman (+0.81). ROP menurun seiring kedalaman. Torsi berkorelasi positif dengan WOB.</p>
+                <p><strong>4. Rekomendasi untuk ML</strong><br>Dataset cocok untuk: <em>klasifikasi formasi</em>, <em>prediksi ROP</em>, dan <em>segmentasi zona drilling</em>.</p>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[19]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Simpan dataset yang sudah dibersihkan</span>
+<span class="variable">df</span>.<span class="function">to_csv</span>(<span class="string">'Well_Dataset_Clean.csv'</span>, index=<span class="keyword">False</span>)
+<span class="function">print</span>(<span class="string">"✅ Dataset disimpan: Well_Dataset_Clean.csv"</span>)
+<span class="function">print</span>(<span class="string">f"   Baris: {len(df):,} | Kolom: {len(df.columns)}"</span>)</pre></div>
+                <div class="cell-output"><pre>✅ Dataset disimpan: Well_Dataset_Clean.csv
+   Baris: 2,058 | Kolom: 18</pre></div>
+            </div>
+        </section>
+        <section id="s10" class="section">
+            <div class="section-header"><div class="section-number">10</div><h2 class="section-title">Latihan Mandiri</h2></div>
+            <div class="exercise-box">
+                <div class="exercise-title"><span>📝</span><span>Soal Latihan</span></div>
+                <ol class="exercise-list">
+                    <li><strong>Missing Values Analysis</strong><br>Jika dataset memiliki 10% missing values pada kolom ROP, strategi apa yang paling tepat? Jelaskan dan implementasikan dengan kode.</li>
+                    <li><strong>Feature Engineering</strong><br>Buat fitur baru "DRILLING_EFFICIENCY" = ROP / (WOB × RPM). Analisis distribusinya per formasi.</li>
+                    <li><strong>Outlier Detection</strong><br>Identifikasi outlier pada kolom TQ menggunakan metode IQR. Berapa persen data yang termasuk outlier?</li>
+                    <li><strong>Analisis Zona</strong><br>Filter data hanya untuk kedalaman 1000-1500m. Bandingkan statistiknya dengan keseluruhan data.</li>
+                    <li><strong>Cross-plot Analysis</strong><br>Buat cross-plot WOB vs ROP dengan warna berbeda untuk setiap formasi. Interpretasikan pola yang terlihat.</li>
+                </ol>
+            </div>
+            <div class="info-box warning">
+                <div class="info-box-title"><span>⚠️</span><span>Tugas Praktikum</span></div>
+                <p>Kerjakan soal latihan dalam format <strong>Jupyter Notebook (.ipynb)</strong>. Sertakan kode, output, dan interpretasi untuk setiap soal. Submit melalui e-learning sebelum pertemuan berikutnya.</p>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-nav">
+                <a href="index.html" class="footer-link"><span>←</span><span>Kembali ke Home</span></a>
+                <a href="praktikum-02.html" class="footer-link"><span>Praktikum 02</span><span>→</span></a>
+            </div>
+            <p class="footer-text">© 2026 Machine Learning in Geofisika - Teknik Geofisika ITERA</p>
+        </div>
+    </footer>
+</body>
+</html>
