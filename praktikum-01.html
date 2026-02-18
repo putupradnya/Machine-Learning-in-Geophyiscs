@@ -749,7 +749,7 @@
                 <h1>Data Wrangling & Exploratory Data Analysis</h1>
                 <p class="hero-description">Hands-on preprocessing dan eksplorasi data drilling menggunakan Python. Pelajari teknik pembersihan data, transformasi, dan visualisasi untuk analisis geofisika.</p>
                 <div class="hero-meta">
-                    <div class="hero-meta-item"><span>⏱️</span><span>3 × 50 menit</span></div>
+                    <div class="hero-meta-item"><span>⏱️</span><span>2 × 50 menit</span></div>
                     <div class="hero-meta-item"><span>📊</span><span>Dataset: Drilling/MWD Data</span></div>
                     <div class="hero-meta-item"><span>🐍</span><span>Python, Pandas, Matplotlib</span></div>
                 </div>
@@ -766,6 +766,140 @@
                 <li>Menginterpretasikan hasil EDA dalam konteks geofisika</li>
             </ul>
         </div>
+        <!-- TARUH SETELAH HERO SECTION, SEBELUM TABLE OF CONTENTS -->
+
+        <div class="dataset-download">
+            <div class="download-card">
+                <div class="download-icon">📊</div>
+                <div class="download-content">
+                    <h3>Dataset Praktikum</h3>
+                    <p>Well Drilling Dataset - 2,060 records dengan 14 variabel drilling parameters</p>
+                    <div class="download-meta">
+                        <span>📁 CSV Format</span>
+                        <span>💾 ~150 KB</span>
+                        <span>🔢 2,060 rows × 14 cols</span>
+                    </div>
+                </div>
+                <a href="https://drive.google.com/file/d/1XTPVVOYjqGkkWYH22MxkcioSiVrAqzrx/view?usp=sharing" 
+                target="_blank" 
+                class="download-button">
+                    <span>⬇️</span>
+                    <span>Download Dataset</span>
+                </a>
+            </div>
+        </div>
+
+        <style>
+        /* Tambahkan CSS ini di bagian <style> yang sudah ada */
+
+        .dataset-download {
+            margin-bottom: 2rem;
+        }
+
+        .download-card {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .download-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+        }
+
+        .download-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .download-content {
+            flex: 1;
+        }
+
+        .download-content h3 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .download-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .download-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .download-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .download-button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .download-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 217, 255, 0.3);
+        }
+
+        .download-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .download-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .download-meta {
+                justify-content: center;
+            }
+            
+            .download-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        </style>
         <nav class="toc">
             <div class="toc-title"><span>📑</span><span>Daftar Isi</span></div>
             <ul class="toc-list">
@@ -823,8 +957,8 @@ plt.<span class="function">style</span>.<span class="function">use</span>(<span 
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[2]</div></div>
                 <div class="cell-code"><pre><span class="comment"># Membaca dataset</span>
 <span class="variable">df</span> = pd.<span class="function">read_csv</span>(<span class="string">'Well_Dataset.csv'</span>)
-<span class="function">print</span>(<span class="string">f"📊 Dimensi Data: {df.shape[0]:,} baris × {df.shape[1]} kolom"</span>)</pre></div>
-                <div class="cell-output"><pre>📊 Dimensi Data: 2,060 baris × 14 kolom</pre></div>
+<span class="function">print</span>(<span class="string">f"Dimensi Data: {df.shape[0]:,} baris × {df.shape[1]} kolom"</span>)</pre></div>
+                <div class="cell-output"><pre>Dimensi Data: 2,060 baris × 14 kolom</pre></div>
             </div>
             <div class="notebook-cell">
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[3]</div></div>
@@ -861,7 +995,7 @@ plt.<span class="function">style</span>.<span class="function">use</span>(<span 
   • Eren Shale: 252 pts
   • Mikasa Anhydrite: 44 pts</pre></div>
             </div>
-            <div class="info-box"><div class="info-box-title"><span>💡</span><span>Insight</span></div><p>Dataset memiliki 2,060 data points dengan 14 kolom. Terdapat 2 kolom dengan missing values (RPM dan TQ masing-masing 1 data).</p></div>
+            <div class="info-box"><div class="info-box-title"><span>💡</span><span>Insight</span></div><p>Dataset memiliki 2,060 data points dengan 14 kolom.</p></div>
         </section>
         <section id="s3" class="section">
             <div class="section-header"><div class="section-number">3</div><h2 class="section-title">Handling Missing Values</h2></div>
@@ -878,7 +1012,7 @@ plt.<span class="function">style</span>.<span class="function">use</span>(<span 
   ⚠️ TQ (lb.ft): 1</pre></div>
             </div>
             <div class="cell-output" style="background:var(--bg-secondary);padding:1rem;border-radius:8px;margin-bottom:1.5rem">
-                <img src="asset/praktikum/" alt="Missing Values">
+                <img src="asset/praktikum/fig_missing_value.jpg" alt="Missing Values">
                 <p style="text-align:center;font-size:.85rem;color:var(--text-muted);margin-top:.75rem">Gambar 1. Visualisasi Missing Values per Kolom</p>
             </div>
             <div class="notebook-cell">
@@ -904,6 +1038,10 @@ plt.<span class="function">style</span>.<span class="function">use</span>(<span 
 <span class="function">print</span>(<span class="string">f"📊 Jumlah baris setelah cleaning: {len(df):,}"</span>)</pre></div>
                 <div class="cell-output"><pre>🔍 Jumlah baris duplikat: 2
 📊 Jumlah baris setelah cleaning: 2,058</pre></div>
+            </div>
+            <div class="cell-output" style="background:var(--bg-secondary);padding:1rem;border-radius:8px;margin-bottom:1.5rem">
+                <img src="asset/praktikum/fig_duplicated.jpg" alt="Duplicated Values">
+                <p style="text-align:center;font-size:.85rem;color:var(--text-muted);margin-top:.75rem">Gambar 2. Visualisasi Duplicated Values</p>
             </div>
         </section>
         <section id="s5" class="section">
@@ -983,7 +1121,7 @@ Mikasa Anhydrite     21.73</pre></div>
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[12]</div></div>
                 <div class="cell-code"><pre><span class="comment"># Histogram distribusi parameter drilling</span>
 <span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">2</span>, <span class="number">3</span>, figsize=(<span class="number">14</span>, <span class="number">8</span>))
-<span class="variable">params</span> = [<span class="string">'ROP'</span>, <span class="string">'WOB'</span>, <span class="string">'RPM'</span>, <span class="string">'TQ'</span>, <span class="string">'SPP'</span>, <span class="string">'FR'</span>]
+<span class="variable">params</span> = [<span class="string">'ROP (m/hr)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>, <span class="string">'SPP (psi)'</span>, <span class="string">'FR (gpm)'</span>]
 <span class="keyword">for</span> ax, param <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>.<span class="function">flatten</span>(), <span class="variable">params</span>):
     ax.<span class="function">hist</span>(<span class="variable">df</span>[param], bins=<span class="number">30</span>, color=<span class="string">'#e94560'</span>)
 plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
@@ -994,7 +1132,7 @@ plt.<span class="function">tight_layout</span>(); plt.<span class="function">sho
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[13]</div></div>
                 <div class="cell-code"><pre><span class="comment"># Boxplot per formasi</span>
 <span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">2</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">10</span>))
-<span class="keyword">for</span> ax, param <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>.<span class="function">flatten</span>(), [<span class="string">'ROP'</span>, <span class="string">'WOB'</span>, <span class="string">'RPM'</span>, <span class="string">'TQ'</span>]):
+<span class="keyword">for</span> ax, param <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>.<span class="function">flatten</span>(), [<span class="string">'ROP (m/hr)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>]):
     <span class="variable">df</span>.<span class="function">boxplot</span>(column=param, by=<span class="string">'Formation'</span>, ax=ax)
 plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-output"><img src="asset/praktikum/fig_boxplot.png" alt="Boxplot"></div>
@@ -1004,7 +1142,7 @@ plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[14]</div></div>
                 <div class="cell-code"><pre><span class="comment"># Well Log Style Plot - Parameter vs Kedalaman</span>
 <span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">5</span>, figsize=(<span class="number">16</span>, <span class="number">12</span>), sharey=<span class="keyword">True</span>)
-<span class="variable">params</span> = [<span class="string">'ROP'</span>, <span class="string">'WOB'</span>, <span class="string">'RPM'</span>, <span class="string">'TQ'</span>, <span class="string">'SPP'</span>]
+<span class="variable">params</span> = [<span class="string">'ROP (m/hr)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>, <span class="string">'SPP (psi)'</span>]
 <span class="keyword">for</span> ax, param <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>, <span class="variable">params</span>):
     ax.<span class="function">plot</span>(<span class="variable">df</span>[param], <span class="variable">df</span>[<span class="string">'TVD'</span>])
     ax.<span class="function">fill_betweenx</span>(<span class="variable">df</span>[<span class="string">'TVD'</span>], <span class="number">0</span>, <span class="variable">df</span>[param], alpha=<span class="number">0.3</span>)
@@ -1019,7 +1157,7 @@ plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-code"><pre><span class="comment"># Distribusi dan rata-rata ROP per formasi</span>
 <span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">6</span>))
 <span class="variable">df</span>[<span class="string">'Formation'</span>].<span class="function">value_counts</span>().<span class="function">plot</span>.<span class="function">pie</span>(ax=<span class="variable">axes</span>[<span class="number">0</span>], autopct=<span class="string">'%1.1f%%'</span>)
-<span class="variable">df</span>.<span class="function">groupby</span>(<span class="string">'Formation'</span>)[<span class="string">'ROP'</span>].<span class="function">mean</span>().<span class="function">sort_values</span>().<span class="function">plot</span>.<span class="function">barh</span>(ax=<span class="variable">axes</span>[<span class="number">1</span>])
+<span class="variable">df</span>.<span class="function">groupby</span>(<span class="string">'Formation'</span>)[<span class="string">'ROP (m/hr)'</span>].<span class="function">mean</span>().<span class="function">sort_values</span>().<span class="function">plot</span>.<span class="function">barh</span>(ax=<span class="variable">axes</span>[<span class="number">1</span>])
 plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-output"><img src="asset/praktikum/fig_formation.png" alt="Formation"></div>
             </div>
@@ -1028,9 +1166,9 @@ plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[16]</div></div>
                 <div class="cell-code"><pre><span class="comment"># Time series plot</span>
 <span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">3</span>, <span class="number">1</span>, figsize=(<span class="number">14</span>, <span class="number">10</span>), sharex=<span class="keyword">True</span>)
-<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'ROP'</span>], color=<span class="string">'#e94560'</span>)
-<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'WOB'</span>], color=<span class="string">'#00d9ff'</span>)
-<span class="variable">axes</span>[<span class="number">2</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'TQ'</span>], color=<span class="string">'#4ecdc4'</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'ROP (m/hr)'</span>], color=<span class="string">'#e94560'</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'WOB (ton)'</span>], color=<span class="string">'#00d9ff'</span>)
+<span class="variable">axes</span>[<span class="number">2</span>].<span class="function">plot</span>(<span class="variable">df</span>[<span class="string">'DATE TIME'</span>], <span class="variable">df</span>[<span class="string">'TQ (lb.ft)'</span>], color=<span class="string">'#4ecdc4'</span>)
 plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-output"><img src="asset/praktikum/fig_timeseries.png" alt="Time Series"></div>
             </div>
@@ -1040,7 +1178,7 @@ plt.<span class="function">tight_layout</span>(); plt.<span class="function">sho
             <div class="notebook-cell">
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[17]</div></div>
                 <div class="cell-code"><pre><span class="comment"># Correlation heatmap</span>
-<span class="variable">cols</span> = [<span class="string">'ROP'</span>, <span class="string">'WOB'</span>, <span class="string">'FR'</span>, <span class="string">'SPP'</span>, <span class="string">'RPM'</span>, <span class="string">'TQ'</span>, <span class="string">'TVD'</span>]
+<span class="variable">cols</span> = [<span class="string">'ROP (m/hr)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'FR'</span>, <span class="string">'SPP (psi)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>, <span class="string">'TVD'</span>]
 <span class="variable">corr</span> = <span class="variable">df</span>[<span class="variable">cols</span>].<span class="function">corr</span>()
 plt.<span class="function">figure</span>(figsize=(<span class="number">12</span>, <span class="number">10</span>))
 sns.<span class="function">heatmap</span>(<span class="variable">corr</span>, annot=<span class="keyword">True</span>, cmap=<span class="string">'RdBu_r'</span>, center=<span class="number">0</span>)
@@ -1051,9 +1189,9 @@ plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[18]</div></div>
                 <div class="cell-code"><pre><span class="comment"># Scatter plots</span>
 <span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">3</span>, figsize=(<span class="number">15</span>, <span class="number">5</span>))
-<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'WOB'</span>], <span class="variable">df</span>[<span class="string">'ROP'</span>], c=<span class="variable">df</span>[<span class="string">'TVD'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
-<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'RPM'</span>], <span class="variable">df</span>[<span class="string">'ROP'</span>], c=<span class="variable">df</span>[<span class="string">'TVD'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
-<span class="variable">axes</span>[<span class="number">2</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'WOB'</span>], <span class="variable">df</span>[<span class="string">'TQ'</span>], c=<span class="variable">df</span>[<span class="string">'TVD'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'WOB (ton)'</span>], <span class="variable">df</span>[<span class="string">'ROP (m/hr)'</span>], c=<span class="variable">df</span>[<span class="string">'TVD (m)'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'RPM (rpm)'</span>], <span class="variable">df</span>[<span class="string">'ROP (m/hr)'</span>], c=<span class="variable">df</span>[<span class="string">'TVD (m)'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
+<span class="variable">axes</span>[<span class="number">2</span>].<span class="function">scatter</span>(<span class="variable">df</span>[<span class="string">'WOB (ton)'</span>], <span class="variable">df</span>[<span class="string">'TQ (lb.ft)'</span>], c=<span class="variable">df</span>[<span class="string">'TVD (m)'</span>], cmap=<span class="string">'plasma'</span>, s=<span class="number">10</span>)
 plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-output"><img src="asset/praktikum/fig_scatter.png" alt="Scatter"></div>
             </div>
