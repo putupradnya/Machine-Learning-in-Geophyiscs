@@ -1144,8 +1144,8 @@ plt.<span class="function">show</span>()</pre></div>
 <span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">5</span>, figsize=(<span class="number">16</span>, <span class="number">12</span>), sharey=<span class="keyword">True</span>)
 <span class="variable">params</span> = [<span class="string">'ROP (m/hr)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>, <span class="string">'SPP (psi)'</span>]
 <span class="keyword">for</span> ax, param <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>, <span class="variable">params</span>):
-    ax.<span class="function">plot</span>(<span class="variable">df</span>[param], <span class="variable">df</span>[<span class="string">'TVD'</span>])
-    ax.<span class="function">fill_betweenx</span>(<span class="variable">df</span>[<span class="string">'TVD'</span>], <span class="number">0</span>, <span class="variable">df</span>[param], alpha=<span class="number">0.3</span>)
+    ax.<span class="function">plot</span>(<span class="variable">df</span>[param], <span class="variable">df</span>[<span class="string">'TVD (m)'</span>])
+    ax.<span class="function">fill_betweenx</span>(<span class="variable">df</span>[<span class="string">'TVD (m)'</span>], <span class="number">0</span>, <span class="variable">df</span>[param], alpha=<span class="number">0.3</span>)
 <span class="variable">axes</span>[<span class="number">0</span>].<span class="function">invert_yaxis</span>()
 plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-output"><img src="asset/praktikum/fig_welllog.png" alt="Well Log"></div>
@@ -1178,7 +1178,7 @@ plt.<span class="function">tight_layout</span>(); plt.<span class="function">sho
             <div class="notebook-cell">
                 <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[17]</div></div>
                 <div class="cell-code"><pre><span class="comment"># Correlation heatmap</span>
-<span class="variable">cols</span> = [<span class="string">'ROP (m/hr)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'FR'</span>, <span class="string">'SPP (psi)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>, <span class="string">'TVD'</span>]
+<span class="variable">cols</span> = [<span class="string">'ROP (m/hr)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'FR (gpm)'</span>, <span class="string">'SPP (psi)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>, <span class="string">'TVD (m)'</span>]
 <span class="variable">corr</span> = <span class="variable">df</span>[<span class="variable">cols</span>].<span class="function">corr</span>()
 plt.<span class="function">figure</span>(figsize=(<span class="number">12</span>, <span class="number">10</span>))
 sns.<span class="function">heatmap</span>(<span class="variable">corr</span>, annot=<span class="keyword">True</span>, cmap=<span class="string">'RdBu_r'</span>, center=<span class="number">0</span>)
