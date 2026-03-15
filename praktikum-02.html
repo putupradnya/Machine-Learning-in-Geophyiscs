@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum 02: Supervised Learning — Regresi - Machine Learning in Geophysics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #151922;
+            --bg-tertiary: #1e2530;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #7c3aed;
+            --text-primary: #e8edf4;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --border: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --code-bg: #0d1117;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'IBM Plex Serif', serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(124,58,237,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0,217,255,0.08) 0%, transparent 50%); pointer-events: none; z-index: -1; }
+        .header { background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%); border-bottom: 1px solid var(--border); padding: 1.5rem 2rem; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 1rem; text-decoration: none; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 1.2rem; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .logo-text { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 1.3rem; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .nav-links { display: flex; gap: 0.5rem; }
+        .nav-link { padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; color: var(--text-secondary); font-size: 0.9rem; font-family: 'Manrope', sans-serif; transition: all 0.2s; }
+        .nav-link:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+        .main-container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        .hero { background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary)); border-radius: 16px; padding: 3rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%; }
+        .hero-content { position: relative; z-index: 1; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.15); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; font-family: 'Manrope', sans-serif; margin-bottom: 1rem; backdrop-filter: blur(10px); }
+        .hero h1 { font-family: 'Manrope', sans-serif; font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2; }
+        .hero-description { font-size: 1.1rem; opacity: 0.9; max-width: 700px; margin-bottom: 1.5rem; }
+        .hero-meta { display: flex; gap: 2rem; flex-wrap: wrap; font-family: 'Manrope', sans-serif; }
+        .hero-meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; opacity: 0.9; }
+        .toc { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+        .toc-title { font-family: 'Manrope', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--accent-primary); }
+        .toc-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.5rem; }
+        .toc-item a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border-radius: 8px; text-decoration: none; color: var(--text-secondary); font-size: 0.9rem; font-family: 'Manrope', sans-serif; transition: all 0.2s; }
+        .toc-item a:hover { background: var(--bg-tertiary); color: var(--text-primary); transform: translateX(4px); }
+        .toc-number { width: 24px; height: 24px; background: var(--bg-tertiary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: var(--accent-primary); font-family: 'JetBrains Mono', monospace; }
+        .section { margin-bottom: 3rem; }
+        .section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border); }
+        .section-number { width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; font-family: 'JetBrains Mono', monospace; }
+        .section-title { font-family: 'Manrope', sans-serif; font-size: 1.5rem; font-weight: 700; }
+        .subsection-title { font-family: 'Manrope', sans-serif; font-size: 1.2rem; font-weight: 600; color: var(--accent-primary); margin: 1.5rem 0 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .content-text { color: var(--text-secondary); margin-bottom: 1.5rem; }
+        .content-text p { margin-bottom: 1rem; }
+        .content-text strong { color: var(--text-primary); }
+        .content-text ul, .content-text ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+        .content-text li { margin-bottom: 0.5rem; }
+        .info-box { background: var(--bg-secondary); border: 1px solid var(--border); border-left: 4px solid var(--accent-primary); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; }
+        .info-box.warning { border-left-color: var(--warning); }
+        .info-box.success { border-left-color: var(--success); }
+        .info-box-title { font-family: 'Manrope', sans-serif; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .info-box p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .notebook-cell { margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: var(--bg-secondary); }
+        .cell-header { background: var(--bg-tertiary); padding: 0.6rem 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        .cell-type { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-family: 'Manrope', sans-serif; color: var(--text-muted); }
+        .cell-type-icon { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; background: var(--success); color: var(--bg-primary); font-weight: 600; }
+        .cell-number { font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+        .cell-code { background: var(--code-bg); padding: 1rem 1.25rem; overflow-x: auto; }
+        .cell-code pre { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); margin: 0; }
+        .cell-output { background: var(--bg-secondary); padding: 1rem 1.25rem; border-top: 1px solid var(--border); }
+        .cell-output pre { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); margin: 0; white-space: pre-wrap; }
+        .cell-output img { max-width: 100%; border-radius: 8px; margin-top: 0.5rem; border: 1px solid var(--border); }
+        .keyword { color: #ff79c6; } .string { color: #f1fa8c; } .comment { color: #6272a4; font-style: italic; } .function { color: #50fa7b; } .number { color: #bd93f9; } .variable { color: #8be9fd; } .module { color: #8be9fd; }
+        .data-table-container { overflow-x: auto; margin: 1rem 0; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
+        .data-table th { background: var(--bg-tertiary); padding: 0.6rem 0.8rem; text-align: left; font-weight: 600; color: var(--accent-primary); border-bottom: 2px solid var(--border); white-space: nowrap; }
+        .data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+        .data-table tr:hover td { background: var(--bg-tertiary); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .stat-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; text-align: center; transition: all 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); border-color: var(--accent-primary); }
+        .stat-value { font-family: 'Manrope', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.25rem; }
+        .stat-label { font-family: 'Manrope', sans-serif; font-size: 0.85rem; color: var(--text-muted); }
+        .param-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .param-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; display: flex; align-items: flex-start; gap: 1rem; transition: all 0.2s; }
+        .param-card:hover { transform: translateY(-2px); border-color: var(--accent-primary); }
+        .param-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .param-info h4 { font-family: 'Manrope', sans-serif; font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--accent-primary); }
+        .param-info p { font-size: 0.85rem; color: var(--text-muted); }
+        .objectives-box { background: linear-gradient(135deg, rgba(0,217,255,0.05), rgba(124,58,237,0.05)); border: 1px solid var(--accent-primary); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+        .objectives-title { font-family: 'Manrope', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--accent-primary); }
+        .objectives-list { list-style: none; }
+        .objectives-list li { padding: 0.5rem 0; padding-left: 1.5rem; position: relative; color: var(--text-secondary); }
+        .objectives-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: 600; }
+        .exercise-box { background: var(--bg-secondary); border: 2px dashed var(--warning); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; }
+        .exercise-title { font-family: 'Manrope', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--warning); }
+        .exercise-list { list-style: decimal; padding-left: 1.5rem; color: var(--text-secondary); }
+        .exercise-list li { padding: 0.4rem 0; }
+        .footer { background: var(--bg-secondary); border-top: 1px solid var(--border); padding: 2rem; margin-top: 3rem; }
+        .footer-content { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .footer-nav { display: flex; gap: 1rem; }
+        .footer-link { padding: 0.6rem 1.2rem; background: var(--bg-tertiary); border-radius: 8px; text-decoration: none; color: var(--text-secondary); font-size: 0.9rem; font-family: 'Manrope', sans-serif; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+        .footer-link:hover { background: var(--accent-primary); color: var(--bg-primary); transform: translateY(-2px); }
+        .footer-text { color: var(--text-muted); font-size: 0.85rem; font-family: 'Manrope', sans-serif; }
+        @media (max-width: 768px) { .header-content { flex-direction: column; gap: 1rem; } .hero { padding: 2rem 1.5rem; } .hero h1 { font-size: 1.8rem; } .main-container { padding: 1rem; } .toc-list { grid-template-columns: 1fr; } .footer-content { flex-direction: column; text-align: center; } .stats-grid, .param-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header class="header"><div class="header-content"><a href="index.html" class="logo"><div class="logo-icon">ML</div><span class="logo-text">Machine Learning in Geophysics</span></a><nav class="nav-links"><a href="index.html" class="nav-link">🏠 Home</a><a href="index.html#materi" class="nav-link">📚 Materi</a><a href="index.html#praktikum" class="nav-link">🔬 Praktikum</a></nav></div></header>
+    <main class="main-container">
+        <section class="hero"><div class="hero-content"><div class="hero-badge"><span>🔬</span><span>Modul Praktikum 02</span></div><h1>Supervised Learning — Regresi</h1><p class="hero-description">Hands-on membangun model prediksi Rate of Penetration (ROP) menggunakan Linear Regression, Decision Tree, dan Random Forest. Dari data preparation hingga evaluasi & interpretasi model.</p><div class="hero-meta"><div class="hero-meta-item"><span>⏱️</span><span>2 × 50 menit</span></div><div class="hero-meta-item"><span>📊</span><span>Dataset: Well Drilling (Clean)</span></div><div class="hero-meta-item"><span>🐍</span><span>Python, Scikit-learn</span></div></div></div></section>
+
+        <div class="objectives-box"><div class="objectives-title"><span>🎯</span><span>Tujuan Pembelajaran</span></div><ul class="objectives-list">
+            <li>Memahami konsep supervised learning untuk kasus regresi</li>
+            <li>Menyiapkan data untuk pemodelan: encoding, scaling, dan train-test split</li>
+            <li>Membangun dan melatih model Linear Regression, Decision Tree, dan Random Forest</li>
+            <li>Mengevaluasi performa model dengan metrik MAE, RMSE, dan R²</li>
+            <li>Menginterpretasikan feature importance dalam konteks geofisika drilling</li>
+            <li>Membandingkan dan memilih model terbaik secara objektif</li>
+        </ul></div>
+
+        <nav class="toc"><div class="toc-title"><span>📑</span><span>Daftar Isi</span></div><ul class="toc-list">
+            <li class="toc-item"><a href="#s1"><span class="toc-number">1</span>Pendahuluan & Konteks</a></li>
+            <li class="toc-item"><a href="#s2"><span class="toc-number">2</span>Persiapan Data untuk Modeling</a></li>
+            <li class="toc-item"><a href="#s3"><span class="toc-number">3</span>Train-Test Split</a></li>
+            <li class="toc-item"><a href="#s4"><span class="toc-number">4</span>Model 1: Linear Regression</a></li>
+            <li class="toc-item"><a href="#s5"><span class="toc-number">5</span>Model 2: Decision Tree</a></li>
+            <li class="toc-item"><a href="#s6"><span class="toc-number">6</span>Model 3: Random Forest</a></li>
+            <li class="toc-item"><a href="#s7"><span class="toc-number">7</span>Perbandingan Model</a></li>
+            <li class="toc-item"><a href="#s8"><span class="toc-number">8</span>Visualisasi Diagnostik</a></li>
+            <li class="toc-item"><a href="#s9"><span class="toc-number">9</span>Insight & Kesimpulan</a></li>
+            <li class="toc-item"><a href="#s10"><span class="toc-number">10</span>Latihan Mandiri</a></li>
+        </ul></nav>
+
+        <!-- ═══════════ SECTION 1 ═══════════ -->
+        <section id="s1" class="section">
+            <div class="section-header"><div class="section-number">1</div><h2 class="section-title">Pendahuluan & Konteks</h2></div>
+            <div class="content-text">
+                <p>Pada praktikum sebelumnya, kita telah melakukan <strong>Data Wrangling & EDA</strong> pada dataset drilling dan menghasilkan dataset bersih (<code>Well_Dataset_Clean.csv</code>) dengan 2,058 baris dan 17 kolom — termasuk fitur engineering <strong>MW_DIFF</strong>, <strong>DEPTH_CAT</strong>, dan <strong>FORMATION_CODE</strong>.</p>
+                <p>Sekarang, kita akan menggunakan dataset tersebut untuk membangun model <strong>supervised learning</strong> — khususnya kasus <strong>regresi</strong>. <strong>Supervised learning</strong> adalah paradigma machine learning di mana model belajar dari data berlabel (input → output). Pada regresi, output berupa <strong>nilai kontinu</strong> (angka).</p>
+                <p>Target prediksi kita adalah <strong>ROP (Rate of Penetration)</strong> — kecepatan pengeboran dalam m/hr. Prediksi ROP sangat penting untuk <strong>optimasi biaya operasional</strong>, <strong>perencanaan waktu drilling</strong>, dan <strong>pemilihan parameter optimal</strong>.</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value">2,058</div><div class="stat-label">Data Points (Clean)</div></div>
+                <div class="stat-card"><div class="stat-value">14</div><div class="stat-label">Fitur Input</div></div>
+                <div class="stat-card"><div class="stat-value">ROP</div><div class="stat-label">Target Prediksi</div></div>
+                <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Model Dibangun</div></div>
+            </div>
+            <h3 class="subsection-title">🔄 Workflow Supervised Learning</h3>
+            <div class="param-grid">
+                <div class="param-card"><div class="param-icon">1️⃣</div><div class="param-info"><h4>Data Preparation</h4><p>Encoding, scaling, definisi fitur & target</p></div></div>
+                <div class="param-card"><div class="param-icon">2️⃣</div><div class="param-info"><h4>Train-Test Split</h4><p>Memisahkan data latih dan data uji (80:20)</p></div></div>
+                <div class="param-card"><div class="param-icon">3️⃣</div><div class="param-info"><h4>Training</h4><p>Model belajar pola dari data latih</p></div></div>
+                <div class="param-card"><div class="param-icon">4️⃣</div><div class="param-info"><h4>Evaluation</h4><p>Mengukur performa di data uji</p></div></div>
+            </div>
+        </section>
+
+        <!-- ═══════════ SECTION 2 ═══════════ -->
+        <section id="s2" class="section">
+            <div class="section-header"><div class="section-number">2</div><h2 class="section-title">Persiapan Data untuk Modeling</h2></div>
+            <div class="content-text"><p>Kita memuat dataset yang sudah bersih dari Praktikum 01 beserta fitur engineering yang telah dibuat.</p></div>
+
+            <h3 class="subsection-title">📦 2.1 Import Library & Load Data</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[1]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Import library</span>
+<span class="keyword">import</span> <span class="module">pandas</span> <span class="keyword">as</span> <span class="variable">pd</span>
+<span class="keyword">import</span> <span class="module">numpy</span> <span class="keyword">as</span> <span class="variable">np</span>
+<span class="keyword">import</span> <span class="module">matplotlib.pyplot</span> <span class="keyword">as</span> <span class="variable">plt</span>
+<span class="keyword">import</span> <span class="module">seaborn</span> <span class="keyword">as</span> <span class="variable">sns</span>
+<span class="keyword">from</span> <span class="module">sklearn.model_selection</span> <span class="keyword">import</span> <span class="variable">train_test_split</span>
+<span class="keyword">from</span> <span class="module">sklearn.preprocessing</span> <span class="keyword">import</span> <span class="variable">StandardScaler</span>, <span class="variable">OrdinalEncoder</span>
+<span class="keyword">from</span> <span class="module">sklearn.linear_model</span> <span class="keyword">import</span> <span class="variable">LinearRegression</span>
+<span class="keyword">from</span> <span class="module">sklearn.tree</span> <span class="keyword">import</span> <span class="variable">DecisionTreeRegressor</span>, <span class="variable">plot_tree</span>
+<span class="keyword">from</span> <span class="module">sklearn.ensemble</span> <span class="keyword">import</span> <span class="variable">RandomForestRegressor</span>
+<span class="keyword">from</span> <span class="module">sklearn.metrics</span> <span class="keyword">import</span> <span class="variable">mean_absolute_error</span>, <span class="variable">mean_squared_error</span>, <span class="variable">r2_score</span>
+
+plt.<span class="function">style</span>.<span class="function">use</span>(<span class="string">'dark_background'</span>)
+<span class="function">print</span>(<span class="string">"✅ Library berhasil di-import!"</span>)</pre></div>
+                <div class="cell-output"><pre>✅ Library berhasil di-import!</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[2]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Load dataset clean dari Praktikum 01</span>
+<span class="variable">df</span> = pd.<span class="function">read_csv</span>(<span class="string">'Well_Dataset_Clean.csv'</span>)
+<span class="function">print</span>(<span class="string">f"📊 Dimensi Data: {df.shape[0]:,} baris × {df.shape[1]} kolom"</span>)
+<span class="function">print</span>(<span class="string">f"📋 Kolom:"</span>)
+<span class="keyword">for</span> i, col <span class="keyword">in</span> <span class="function">enumerate</span>(<span class="variable">df</span>.<span class="variable">columns</span>, <span class="number">1</span>):
+    <span class="function">print</span>(<span class="string">f"   {i:2d}. {col}"</span>)</pre></div>
+                <div class="cell-output"><pre>📊 Dimensi Data: 2,058 baris × 17 kolom
+📋 Kolom:
+    1. Formation
+    2. TMD (m)
+    3. TVD (m)
+    4. ROP (m/hr)
+    5. WOB (ton)
+    6. FR (gpm)
+    7. SPP (psi)
+    8. RPM (rpm)
+    9. TQ (lb.ft)
+   10. MW IN (ppg)
+   11. MW OUT (ppg)
+   12. RETURN (%)
+   13. BIT TIME (hr)
+   14. DATE TIME
+   15. MW_DIFF
+   16. DEPTH_CAT
+   17. FORMATION_CODE</pre></div>
+            </div>
+
+            <h3 class="subsection-title">🎯 2.2 Definisi Fitur & Target</h3>
+            <div class="content-text">
+                <p>Dalam supervised learning, kita memisahkan data menjadi <strong>fitur (X)</strong> — variabel input, dan <strong>target (y)</strong> — variabel yang diprediksi. Dari 17 kolom, kita pilih fitur numerik dan fitur engineering yang telah dibuat di Praktikum 01. Kolom <strong>Formation</strong> (teks), <strong>DATE TIME</strong>, dan <strong>DEPTH_CAT</strong> (perlu encoding) ditangani secara khusus.</p>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[3]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Encoding DEPTH_CAT (ordinal: Shallow &lt; Medium &lt; Deep &lt; Very Deep)</span>
+<span class="keyword">from</span> <span class="module">sklearn.preprocessing</span> <span class="keyword">import</span> <span class="variable">OrdinalEncoder</span>
+
+<span class="variable">depth_order</span> = [<span class="string">'Shallow'</span>, <span class="string">'Medium'</span>, <span class="string">'Deep'</span>, <span class="string">'Very Deep'</span>]
+<span class="variable">oe</span> = <span class="function">OrdinalEncoder</span>(categories=[<span class="variable">depth_order</span>])
+<span class="variable">df</span>[<span class="string">'DEPTH_CAT_encoded'</span>] = <span class="variable">oe</span>.<span class="function">fit_transform</span>(<span class="variable">df</span>[[<span class="string">'DEPTH_CAT'</span>]]).<span class="function">astype</span>(<span class="function">int</span>)
+
+<span class="function">print</span>(<span class="string">"🏷️ Ordinal Encoding — DEPTH_CAT:"</span>)
+<span class="keyword">for</span> cat, code <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">depth_order</span>, <span class="function">range</span>(<span class="number">4</span>)):
+    <span class="function">print</span>(<span class="string">f"   {cat:12s} → {code}"</span>)</pre></div>
+                <div class="cell-output"><pre>🏷️ Ordinal Encoding — DEPTH_CAT:
+   Shallow      → 0
+   Medium       → 1
+   Deep         → 2
+   Very Deep    → 3</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[4]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Definisi fitur dan target</span>
+<span class="variable">feature_cols</span> = [
+    <span class="string">'TMD (m)'</span>, <span class="string">'TVD (m)'</span>, <span class="string">'WOB (ton)'</span>, <span class="string">'FR (gpm)'</span>, <span class="string">'SPP (psi)'</span>,
+    <span class="string">'RPM (rpm)'</span>, <span class="string">'TQ (lb.ft)'</span>, <span class="string">'MW IN (ppg)'</span>, <span class="string">'MW OUT (ppg)'</span>,
+    <span class="string">'RETURN (%)'</span>, <span class="string">'BIT TIME (hr)'</span>,   <span class="comment"># 11 fitur asli</span>
+    <span class="string">'MW_DIFF'</span>, <span class="string">'FORMATION_CODE'</span>,       <span class="comment"># 2 fitur dari Praktikum 01</span>
+    <span class="string">'DEPTH_CAT_encoded'</span>               <span class="comment"># 1 fitur encoded baru</span>
+]
+<span class="variable">target_col</span> = <span class="string">'ROP (m/hr)'</span>
+
+<span class="variable">X</span> = <span class="variable">df</span>[<span class="variable">feature_cols</span>].<span class="function">copy</span>()
+<span class="variable">y</span> = <span class="variable">df</span>[<span class="variable">target_col</span>].<span class="function">copy</span>()
+
+<span class="function">print</span>(<span class="string">f"📥 Fitur (X): {len(feature_cols)} variabel"</span>)
+<span class="keyword">for</span> i, col <span class="keyword">in</span> <span class="function">enumerate</span>(<span class="variable">feature_cols</span>, <span class="number">1</span>):
+    <span class="function">print</span>(<span class="string">f"   {i:2d}. {col}"</span>)
+<span class="function">print</span>(<span class="string">f"\n🎯 Target (y): {target_col}"</span>)
+<span class="function">print</span>(<span class="string">f"📊 X shape: {X.shape} | y shape: {y.shape}"</span>)</pre></div>
+                <div class="cell-output"><pre>📥 Fitur (X): 14 variabel
+    1. TMD (m)
+    2. TVD (m)
+    3. WOB (ton)
+    4. FR (gpm)
+    5. SPP (psi)
+    6. RPM (rpm)
+    7. TQ (lb.ft)
+    8. MW IN (ppg)
+    9. MW OUT (ppg)
+   10. RETURN (%)
+   11. BIT TIME (hr)
+   12. MW_DIFF
+   13. FORMATION_CODE
+   14. DEPTH_CAT_encoded
+
+🎯 Target (y): ROP (m/hr)
+📊 X shape: (2058, 14) | y shape: (2058,)</pre></div>
+            </div>
+
+            <h3 class="subsection-title">📐 2.3 Recap: Feature Engineering dari Praktikum 01</h3>
+            <div class="content-text"><p>Di Praktikum 01 kita sudah membuat 3 fitur baru. Mari lihat distribusinya untuk memastikan data sudah benar:</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[5]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Visualisasi fitur engineering</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">3</span>, figsize=(<span class="number">18</span>, <span class="number">5</span>))
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">hist</span>(<span class="variable">df</span>[<span class="string">'MW_DIFF'</span>], bins=<span class="number">30</span>, color=<span class="string">'#4ecdc4'</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">set_title</span>(<span class="string">'Distribusi MW_DIFF'</span>)
+<span class="variable">df</span>[<span class="string">'DEPTH_CAT'</span>].<span class="function">value_counts</span>().<span class="function">reindex</span>(<span class="variable">depth_order</span>).<span class="function">plot</span>.<span class="function">bar</span>(ax=<span class="variable">axes</span>[<span class="number">1</span>])
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">set_title</span>(<span class="string">'DEPTH_CAT Distribution'</span>)
+<span class="comment"># FORMATION_CODE mapping</span>
+<span class="variable">fm</span> = <span class="variable">df</span>.<span class="function">groupby</span>(<span class="string">'FORMATION_CODE'</span>)[<span class="string">'Formation'</span>].<span class="function">first</span>()
+<span class="variable">fm</span>.<span class="function">plot</span>.<span class="function">barh</span>(ax=<span class="variable">axes</span>[<span class="number">2</span>])
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_feature_engineering.png" alt="Feature Engineering"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>💡</span><span>Recap Feature Engineering</span></div>
+            <p>• <strong>MW_DIFF</strong> = MW OUT − MW IN: Selisih densitas lumpur, mengindikasikan kontaminasi formasi.</p>
+            <p>• <strong>DEPTH_CAT</strong>: Kategorisasi kedalaman (Shallow/Medium/Deep/Very Deep) → di-encode menjadi ordinal 0–3.</p>
+            <p>• <strong>FORMATION_CODE</strong>: Kode numerik untuk jenis formasi batuan (0–9), sudah dibuat di Praktikum 01.</p></div>
+
+            <h3 class="subsection-title">📊 2.4 Distribusi Target</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[6]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Distribusi target ROP</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">5</span>))
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">hist</span>(<span class="variable">df</span>[<span class="variable">target_col</span>], bins=<span class="number">40</span>, color=<span class="string">'#00d9ff'</span>, alpha=<span class="number">0.85</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">axvline</span>(<span class="variable">df</span>[<span class="variable">target_col</span>].<span class="function">mean</span>(), color=<span class="string">'red'</span>, ls=<span class="string">'--'</span>, label=<span class="string">f'Mean: {df[target_col].mean():.1f}'</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">legend</span>()
+<span class="comment"># Boxplot per formasi</span>
+<span class="variable">df</span>.<span class="function">boxplot</span>(column=<span class="variable">target_col</span>, by=<span class="string">'Formation'</span>, ax=<span class="variable">axes</span>[<span class="number">1</span>])
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_target_distribution.png" alt="Target Distribution"></div>
+            </div>
+
+            <h3 class="subsection-title">⚖️ 2.5 Feature Scaling</h3>
+            <div class="content-text"><p><strong>Feature scaling</strong> menyamakan skala antar fitur. Tanpa scaling, fitur bernilai besar (SPP: ribuan, TQ: ribuan) akan mendominasi model linear. Kita gunakan <strong>StandardScaler</strong> (mean=0, std=1). Catatan: scaling diterapkan <em>setelah</em> train-test split untuk mencegah data leakage.</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[7]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Demo: Before vs After Scaling</span>
+<span class="variable">scaler_demo</span> = <span class="function">StandardScaler</span>()
+<span class="variable">X_demo</span> = pd.<span class="function">DataFrame</span>(<span class="variable">scaler_demo</span>.<span class="function">fit_transform</span>(<span class="variable">X</span>), columns=<span class="variable">X</span>.<span class="variable">columns</span>)
+
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">5</span>))
+<span class="variable">show</span> = [<span class="string">'WOB (ton)'</span>, <span class="string">'FR (gpm)'</span>, <span class="string">'SPP (psi)'</span>, <span class="string">'RPM (rpm)'</span>, <span class="string">'TVD (m)'</span>, <span class="string">'TQ (lb.ft)'</span>]
+<span class="variable">X</span>[<span class="variable">show</span>].<span class="function">boxplot</span>(ax=<span class="variable">axes</span>[<span class="number">0</span>]); <span class="variable">axes</span>[<span class="number">0</span>].<span class="function">set_title</span>(<span class="string">'Sebelum Scaling'</span>)
+<span class="variable">X_demo</span>[<span class="variable">show</span>].<span class="function">boxplot</span>(ax=<span class="variable">axes</span>[<span class="number">1</span>]); <span class="variable">axes</span>[<span class="number">1</span>].<span class="function">set_title</span>(<span class="string">'Setelah StandardScaler'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_scaling.png" alt="Scaling"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>💡</span><span>Kapan Scaling Diperlukan?</span></div>
+            <p>• <strong>Wajib</strong>: Linear Regression, SVM, KNN, Neural Network (model sensitif terhadap skala).</p>
+            <p>• <strong>Tidak perlu</strong>: Decision Tree, Random Forest (model berbasis aturan split, bukan jarak).</p></div>
+        </section>
+
+        <!-- ═══════════ SECTION 3 ═══════════ -->
+        <section id="s3" class="section">
+            <div class="section-header"><div class="section-number">3</div><h2 class="section-title">Train-Test Split</h2></div>
+            <div class="content-text"><p>Data dibagi <strong>80:20</strong> — 80% untuk training, 20% untuk testing. Scaling dilakukan <em>setelah</em> split: <code>fit_transform</code> pada train, <code>transform</code> saja pada test.</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[8]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Train-Test Split (80:20)</span>
+<span class="variable">X_train</span>, <span class="variable">X_test</span>, <span class="variable">y_train</span>, <span class="variable">y_test</span> = <span class="function">train_test_split</span>(
+    <span class="variable">X</span>, <span class="variable">y</span>, test_size=<span class="number">0.2</span>, random_state=<span class="number">42</span>
+)
+
+<span class="comment"># Scaling SETELAH split (mencegah data leakage!)</span>
+<span class="variable">scaler</span> = <span class="function">StandardScaler</span>()
+<span class="variable">X_train_scaled</span> = pd.<span class="function">DataFrame</span>(
+    <span class="variable">scaler</span>.<span class="function">fit_transform</span>(<span class="variable">X_train</span>),
+    columns=<span class="variable">X_train</span>.<span class="variable">columns</span>, index=<span class="variable">X_train</span>.<span class="variable">index</span>
+)
+<span class="variable">X_test_scaled</span> = pd.<span class="function">DataFrame</span>(
+    <span class="variable">scaler</span>.<span class="function">transform</span>(<span class="variable">X_test</span>),  <span class="comment"># transform saja, BUKAN fit_transform!</span>
+    columns=<span class="variable">X_test</span>.<span class="variable">columns</span>, index=<span class="variable">X_test</span>.<span class="variable">index</span>
+)
+
+<span class="function">print</span>(<span class="string">f"📊 Train set: {X_train.shape[0]:,} data ({X_train.shape[0]/len(X)*100:.0f}%)"</span>)
+<span class="function">print</span>(<span class="string">f"📊 Test set:  {X_test.shape[0]:,} data ({X_test.shape[0]/len(X)*100:.0f}%)"</span>)
+<span class="function">print</span>(<span class="string">f"✅ Scaling selesai (fit pada train, transform pada test)"</span>)</pre></div>
+                <div class="cell-output"><pre>📊 Train set: 1,646 data (80%)
+📊 Test set:  412 data (20%)
+✅ Scaling selesai (fit pada train, transform pada test)</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[9]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Visualisasi proporsi dan distribusi</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">5</span>))
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">pie</span>([<span class="function">len</span>(<span class="variable">X_train</span>), <span class="function">len</span>(<span class="variable">X_test</span>)], labels=[<span class="string">'Train'</span>, <span class="string">'Test'</span>], autopct=<span class="string">'%1.0f%%'</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">hist</span>(<span class="variable">y_train</span>, alpha=<span class="number">0.7</span>, label=<span class="string">'Train'</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">hist</span>(<span class="variable">y_test</span>, alpha=<span class="number">0.7</span>, label=<span class="string">'Test'</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">legend</span>()
+plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_train_test.png" alt="Train Test Split"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>🔑</span><span>Mencegah Data Leakage</span></div><p><code>scaler.fit_transform()</code> hanya pada <strong>data train</strong>. Data test hanya <code>scaler.transform()</code>. Statistik scaling (mean, std) hanya berasal dari train — simulasi evaluasi benar-benar pada data "baru" yang belum pernah dilihat model.</p></div>
+        </section>
+
+        <!-- ═══════════ SECTION 4 ═══════════ -->
+        <section id="s4" class="section">
+            <div class="section-header"><div class="section-number">4</div><h2 class="section-title">Model 1: Linear Regression</h2></div>
+            <div class="content-text"><p><strong>Linear Regression</strong> mencari hubungan linear: <strong>ŷ = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ</strong>. Model ini meminimalkan sum of squared errors (OLS). Menggunakan data yang sudah di-scale.</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[10]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Training Linear Regression (data SCALED)</span>
+<span class="variable">lr</span> = <span class="function">LinearRegression</span>()
+<span class="variable">lr</span>.<span class="function">fit</span>(<span class="variable">X_train_scaled</span>, <span class="variable">y_train</span>)
+<span class="variable">y_pred_lr</span> = <span class="variable">lr</span>.<span class="function">predict</span>(<span class="variable">X_test_scaled</span>)
+
+<span class="function">print</span>(<span class="string">"📊 Linear Regression — Hasil Evaluasi:"</span>)
+<span class="function">print</span>(<span class="string">f"   MAE  = {mean_absolute_error(y_test, y_pred_lr):.4f} m/hr"</span>)
+<span class="function">print</span>(<span class="string">f"   RMSE = {np.sqrt(mean_squared_error(y_test, y_pred_lr)):.4f} m/hr"</span>)
+<span class="function">print</span>(<span class="string">f"   R²   = {r2_score(y_test, y_pred_lr):.4f}"</span>)</pre></div>
+                <div class="cell-output"><pre>📊 Linear Regression — Hasil Evaluasi:
+   MAE  = 18.7175 m/hr
+   RMSE = 29.3290 m/hr
+   R²   = 0.2112</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[11]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Predicted vs Actual + Residual Plot</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">6</span>))
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">scatter</span>(<span class="variable">y_test</span>, <span class="variable">y_pred_lr</span>, alpha=<span class="number">0.5</span>, s=<span class="number">15</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">plot</span>([<span class="variable">y_test</span>.<span class="function">min</span>(), <span class="variable">y_test</span>.<span class="function">max</span>()],
+             [<span class="variable">y_test</span>.<span class="function">min</span>(), <span class="variable">y_test</span>.<span class="function">max</span>()], <span class="string">'r--'</span>)
+<span class="variable">residuals</span> = <span class="variable">y_test</span> - <span class="variable">y_pred_lr</span>
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">scatter</span>(<span class="variable">y_pred_lr</span>, <span class="variable">residuals</span>, alpha=<span class="number">0.5</span>, s=<span class="number">15</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">axhline</span>(<span class="number">0</span>, color=<span class="string">'red'</span>, ls=<span class="string">'--'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_lr_result.png" alt="LR Result"></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[12]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Koefisien model</span>
+<span class="variable">coef_df</span> = pd.<span class="function">DataFrame</span>({
+    <span class="string">'Feature'</span>: <span class="variable">feature_cols</span>,
+    <span class="string">'Coefficient'</span>: <span class="variable">lr</span>.<span class="variable">coef_</span>
+}).<span class="function">sort_values</span>(<span class="string">'Coefficient'</span>)
+<span class="function">print</span>(<span class="string">f"Intercept: {lr.intercept_:.4f}"</span>)
+<span class="function">print</span>(<span class="variable">coef_df</span>.<span class="function">to_string</span>(index=<span class="keyword">False</span>))
+<span class="variable">coef_df</span>.<span class="function">plot</span>.<span class="function">barh</span>(x=<span class="string">'Feature'</span>, y=<span class="string">'Coefficient'</span>); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_lr_coef.png" alt="LR Coef"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>🔍</span><span>Interpretasi</span></div>
+            <p>R² = 0.2112 — Linear Regression hanya menjelaskan ~21% variasi ROP. Ini mengindikasikan bahwa hubungan antara parameter drilling dan ROP bersifat <strong>non-linear</strong>. Koefisien <strong>BIT TIME</strong> dan <strong>SPP</strong> positif besar, sementara <strong>WOB</strong> dan <strong>MW_DIFF</strong> berkoefisien negatif. Perhatikan juga bahwa TMD dan TVD memiliki koefisien sangat besar (berlawanan arah) karena keduanya sangat berkorelasi — ini menunjukkan masalah <strong>multicollinearity</strong>.</p></div>
+        </section>
+
+        <!-- ═══════════ SECTION 5 ═══════════ -->
+        <section id="s5" class="section">
+            <div class="section-header"><div class="section-number">5</div><h2 class="section-title">Model 2: Decision Tree Regressor</h2></div>
+            <div class="content-text"><p><strong>Decision Tree</strong> mempartisi data secara rekursif berdasarkan aturan if-else. Mampu menangkap <strong>hubungan non-linear</strong> tanpa perlu scaling. Parameter <code>max_depth=8</code> membatasi kedalaman tree.</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[13]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Training Decision Tree (tanpa scaling!)</span>
+<span class="variable">dt</span> = <span class="function">DecisionTreeRegressor</span>(max_depth=<span class="number">8</span>, random_state=<span class="number">42</span>)
+<span class="variable">dt</span>.<span class="function">fit</span>(<span class="variable">X_train</span>, <span class="variable">y_train</span>)
+<span class="variable">y_pred_dt</span> = <span class="variable">dt</span>.<span class="function">predict</span>(<span class="variable">X_test</span>)
+
+<span class="function">print</span>(<span class="string">"🌳 Decision Tree — Hasil Evaluasi:"</span>)
+<span class="function">print</span>(<span class="string">f"   MAE  = {mean_absolute_error(y_test, y_pred_dt):.4f} m/hr"</span>)
+<span class="function">print</span>(<span class="string">f"   RMSE = {np.sqrt(mean_squared_error(y_test, y_pred_dt)):.4f} m/hr"</span>)
+<span class="function">print</span>(<span class="string">f"   R²   = {r2_score(y_test, y_pred_dt):.4f}"</span>)</pre></div>
+                <div class="cell-output"><pre>🌳 Decision Tree — Hasil Evaluasi:
+   MAE  = 14.0066 m/hr
+   RMSE = 20.0478 m/hr
+   R²   = 0.6315</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[14]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Visualisasi Decision Tree (max_depth=3 agar terbaca)</span>
+<span class="variable">dt_viz</span> = <span class="function">DecisionTreeRegressor</span>(max_depth=<span class="number">3</span>, random_state=<span class="number">42</span>)
+<span class="variable">dt_viz</span>.<span class="function">fit</span>(<span class="variable">X_train</span>, <span class="variable">y_train</span>)
+<span class="variable">fig</span>, <span class="variable">ax</span> = plt.<span class="function">subplots</span>(figsize=(<span class="number">26</span>, <span class="number">12</span>))
+<span class="function">plot_tree</span>(<span class="variable">dt_viz</span>, feature_names=<span class="variable">feature_cols</span>,
+          filled=<span class="keyword">True</span>, rounded=<span class="keyword">True</span>, ax=<span class="variable">ax</span>, fontsize=<span class="number">8</span>)
+plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_dt_tree.png" alt="DT Tree"></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[15]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Predicted vs Actual + Residual</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">6</span>))
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">scatter</span>(<span class="variable">y_test</span>, <span class="variable">y_pred_dt</span>, alpha=<span class="number">0.5</span>, s=<span class="number">15</span>, color=<span class="string">'#7c3aed'</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">plot</span>([<span class="variable">y_test</span>.<span class="function">min</span>(), <span class="variable">y_test</span>.<span class="function">max</span>()], [<span class="variable">y_test</span>.<span class="function">min</span>(), <span class="variable">y_test</span>.<span class="function">max</span>()], <span class="string">'r--'</span>)
+<span class="variable">residuals_dt</span> = <span class="variable">y_test</span> - <span class="variable">y_pred_dt</span>
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">scatter</span>(<span class="variable">y_pred_dt</span>, <span class="variable">residuals_dt</span>, alpha=<span class="number">0.5</span>, s=<span class="number">15</span>, color=<span class="string">'#7c3aed'</span>)
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">axhline</span>(<span class="number">0</span>, color=<span class="string">'red'</span>, ls=<span class="string">'--'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_dt_result.png" alt="DT Result"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>🌳</span><span>Interpretasi</span></div><p>R² = 0.6315 — peningkatan drastis +42% dibanding Linear Regression. Decision Tree mampu menangkap hubungan non-linear yang tidak bisa ditangkap model linear. Dari visualisasi tree, split pertama terjadi pada parameter kedalaman — mengkonfirmasi peran dominan kedalaman terhadap ROP.</p></div>
+        </section>
+
+        <!-- ═══════════ SECTION 6 ═══════════ -->
+        <section id="s6" class="section">
+            <div class="section-header"><div class="section-number">6</div><h2 class="section-title">Model 3: Random Forest Regressor</h2></div>
+            <div class="content-text"><p><strong>Random Forest</strong> adalah metode <em>ensemble</em>: membangun 100 Decision Tree independen pada subset data/fitur yang berbeda, lalu merata-ratakan prediksinya. Ini mengurangi <strong>overfitting</strong> dan meningkatkan generalisasi.</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[16]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Training Random Forest</span>
+<span class="variable">rf</span> = <span class="function">RandomForestRegressor</span>(
+    n_estimators=<span class="number">100</span>,   <span class="comment"># 100 trees</span>
+    max_depth=<span class="number">12</span>,       <span class="comment"># Kedalaman per tree</span>
+    random_state=<span class="number">42</span>,
+    n_jobs=-<span class="number">1</span>           <span class="comment"># Semua CPU core</span>
+)
+<span class="variable">rf</span>.<span class="function">fit</span>(<span class="variable">X_train</span>, <span class="variable">y_train</span>)
+<span class="variable">y_pred_rf</span> = <span class="variable">rf</span>.<span class="function">predict</span>(<span class="variable">X_test</span>)
+
+<span class="function">print</span>(<span class="string">"🌲 Random Forest — Hasil Evaluasi:"</span>)
+<span class="function">print</span>(<span class="string">f"   MAE  = {mean_absolute_error(y_test, y_pred_rf):.4f} m/hr"</span>)
+<span class="function">print</span>(<span class="string">f"   RMSE = {np.sqrt(mean_squared_error(y_test, y_pred_rf)):.4f} m/hr"</span>)
+<span class="function">print</span>(<span class="string">f"   R²   = {r2_score(y_test, y_pred_rf):.4f}"</span>)</pre></div>
+                <div class="cell-output"><pre>🌲 Random Forest — Hasil Evaluasi:
+   MAE  = 11.4241 m/hr
+   RMSE = 16.4361 m/hr
+   R²   = 0.7523</pre></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[17]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Predicted vs Actual + Residual</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">6</span>))
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">scatter</span>(<span class="variable">y_test</span>, <span class="variable">y_pred_rf</span>, alpha=<span class="number">0.5</span>, s=<span class="number">15</span>, color=<span class="string">'#10b981'</span>)
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">plot</span>([<span class="variable">y_test</span>.<span class="function">min</span>(), <span class="variable">y_test</span>.<span class="function">max</span>()], [<span class="variable">y_test</span>.<span class="function">min</span>(), <span class="variable">y_test</span>.<span class="function">max</span>()], <span class="string">'r--'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_rf_result.png" alt="RF Result"></div>
+            </div>
+
+            <h3 class="subsection-title">🔑 6.1 Feature Importance</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[18]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Feature Importance</span>
+<span class="variable">imp_df</span> = pd.<span class="function">DataFrame</span>({
+    <span class="string">'Feature'</span>: <span class="variable">feature_cols</span>,
+    <span class="string">'Importance'</span>: <span class="variable">rf</span>.<span class="variable">feature_importances_</span>
+}).<span class="function">sort_values</span>(<span class="string">'Importance'</span>, ascending=<span class="keyword">False</span>)
+
+<span class="function">print</span>(<span class="string">"🔑 Feature Importance (Random Forest):"</span>)
+<span class="keyword">for</span> _, row <span class="keyword">in</span> <span class="variable">imp_df</span>.<span class="function">iterrows</span>():
+    bar = <span class="string">'█'</span> * <span class="function">int</span>(row[<span class="string">'Importance'</span>] * <span class="number">50</span>)
+    <span class="function">print</span>(<span class="string">f"   {row['Feature']:22s} {row['Importance']:.4f} {bar}"</span>)
+
+<span class="variable">imp_df</span>.<span class="function">plot</span>.<span class="function">barh</span>(x=<span class="string">'Feature'</span>, y=<span class="string">'Importance'</span>); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><pre>🔑 Feature Importance (Random Forest):
+   TMD (m)                0.1418 ███████
+   RPM (rpm)              0.1410 ███████
+   TVD (m)                0.1298 ██████
+   BIT TIME (hr)          0.1062 █████
+   TQ (lb.ft)             0.1059 █████
+   FR (gpm)               0.0994 ████
+   WOB (ton)              0.0926 ████
+   FORMATION_CODE         0.0507 ██
+   SPP (psi)              0.0477 ██
+   RETURN (%)             0.0406 ██
+   MW_DIFF                0.0377 █
+   MW OUT (ppg)           0.0055 
+   MW IN (ppg)            0.0006 
+   DEPTH_CAT_encoded      0.0005 </pre>
+                <img src="asset/praktikum-02/fig_rf_importance.png" alt="Feature Importance">
+                </div>
+            </div>
+            <div class="info-box success"><div class="info-box-title"><span>🎯</span><span>Interpretasi Feature Importance</span></div>
+            <p><strong>TMD/TVD</strong> (kedalaman) mendominasi ~27% total importance — formasi semakin keras di kedalaman, langsung memengaruhi kecepatan drilling. <strong>RPM</strong> (14.1%) adalah parameter operasional paling berpengaruh — driller bisa langsung mengatur ini. <strong>BIT TIME</strong> (10.6%) dan <strong>TQ</strong> (10.6%) juga signifikan — waktu pemakaian bit dan torsi mengindikasikan keausan bit. Fitur engineering <strong>FORMATION_CODE</strong> (5.1%) berkontribusi lebih besar dari SPP, membuktikan bahwa feature engineering di Praktikum 01 bermanfaat. <strong>MW IN/OUT</strong> dan <strong>DEPTH_CAT_encoded</strong> hampir tidak berkontribusi — informasinya sudah tercakup oleh TVD dan fitur lain.</p></div>
+        </section>
+
+        <!-- ═══════════ SECTION 7 ═══════════ -->
+        <section id="s7" class="section">
+            <div class="section-header"><div class="section-number">7</div><h2 class="section-title">Perbandingan Model</h2></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[19]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Tabel perbandingan</span>
+<span class="variable">results</span> = pd.<span class="function">DataFrame</span>({
+    <span class="string">'Model'</span>: [<span class="string">'Linear Regression'</span>, <span class="string">'Decision Tree'</span>, <span class="string">'Random Forest'</span>],
+    <span class="string">'MAE'</span>: [<span class="number">18.72</span>, <span class="number">14.01</span>, <span class="number">11.42</span>],
+    <span class="string">'RMSE'</span>: [<span class="number">29.33</span>, <span class="number">20.05</span>, <span class="number">16.44</span>],
+    <span class="string">'R²'</span>: [<span class="number">0.2112</span>, <span class="number">0.6315</span>, <span class="number">0.7523</span>]
+})
+<span class="function">print</span>(<span class="variable">results</span>.<span class="function">to_string</span>(index=<span class="keyword">False</span>))</pre></div>
+                <div class="cell-output">
+                    <div class="data-table-container"><table class="data-table">
+                        <thead><tr><th>Model</th><th>MAE (m/hr)</th><th>RMSE (m/hr)</th><th>R²</th></tr></thead>
+                        <tbody>
+                            <tr><td>Linear Regression</td><td>18.72</td><td>29.33</td><td style="color:#e94560">0.2112</td></tr>
+                            <tr><td>Decision Tree</td><td>14.01</td><td>20.05</td><td style="color:#f59e0b">0.6315</td></tr>
+                            <tr><td style="font-weight:600;color:#10b981">Random Forest</td><td style="font-weight:600;color:#10b981">11.42</td><td style="font-weight:600;color:#10b981">16.44</td><td style="font-weight:600;color:#10b981">0.7523</td></tr>
+                        </tbody>
+                    </table></div>
+                </div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[20]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Bar chart perbandingan R² dan RMSE</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">2</span>, figsize=(<span class="number">14</span>, <span class="number">5</span>))
+<span class="variable">models</span> = [<span class="string">'Linear Reg.'</span>, <span class="string">'Decision Tree'</span>, <span class="string">'Random Forest'</span>]
+<span class="variable">axes</span>[<span class="number">0</span>].<span class="function">bar</span>(<span class="variable">models</span>, <span class="variable">results</span>[<span class="string">'R²'</span>])
+<span class="variable">axes</span>[<span class="number">1</span>].<span class="function">bar</span>(<span class="variable">models</span>, <span class="variable">results</span>[<span class="string">'RMSE'</span>])
+plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_model_comparison.png" alt="Model Comparison"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>📊</span><span>Memahami Metrik Evaluasi</span></div>
+            <p>• <strong>MAE</strong>: Rata-rata selisih absolut prediksi vs aktual. Satuan sama dengan target (m/hr). Makin kecil makin baik.</p>
+            <p>• <strong>RMSE</strong>: Seperti MAE tapi lebih sensitif terhadap error besar. Makin kecil makin baik.</p>
+            <p>• <strong>R²</strong>: Proporsi variasi target yang dijelaskan model. Range 0–1, makin dekat ke 1 makin baik.</p></div>
+        </section>
+
+        <!-- ═══════════ SECTION 8 ═══════════ -->
+        <section id="s8" class="section">
+            <div class="section-header"><div class="section-number">8</div><h2 class="section-title">Visualisasi Diagnostik</h2></div>
+            <h3 class="subsection-title">📈 8.1 Predicted vs Actual — Semua Model</h3>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[21]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Perbandingan Predicted vs Actual (3 model)</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">3</span>, figsize=(<span class="number">18</span>, <span class="number">5.5</span>))
+<span class="keyword">for</span> ax, y_pred, name, color <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>,
+    [<span class="variable">y_pred_lr</span>, <span class="variable">y_pred_dt</span>, <span class="variable">y_pred_rf</span>],
+    [<span class="string">'Linear Regression'</span>, <span class="string">'Decision Tree'</span>, <span class="string">'Random Forest'</span>],
+    [<span class="string">'#00d9ff'</span>, <span class="string">'#7c3aed'</span>, <span class="string">'#10b981'</span>]):
+    ax.<span class="function">scatter</span>(<span class="variable">y_test</span>, y_pred, alpha=<span class="number">0.4</span>, s=<span class="number">12</span>, color=color)
+    ax.<span class="function">plot</span>([<span class="variable">y_test</span>.<span class="function">min</span>(), <span class="variable">y_test</span>.<span class="function">max</span>()],
+            [<span class="variable">y_test</span>.<span class="function">min</span>(), <span class="variable">y_test</span>.<span class="function">max</span>()], <span class="string">'r--'</span>)
+    ax.<span class="function">set_title</span>(name); ax.<span class="function">set_aspect</span>(<span class="string">'equal'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_pred_comparison.png" alt="Pred Comparison"></div>
+            </div>
+            <h3 class="subsection-title">📊 8.2 Distribusi Residual</h3>
+            <div class="content-text"><p>Residual yang baik seharusnya berdistribusi <strong>normal</strong> dan berpusat di <strong>nol</strong>.</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[22]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Distribusi residual ketiga model</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">3</span>, figsize=(<span class="number">16</span>, <span class="number">5</span>))
+<span class="keyword">for</span> ax, res, name <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>,
+    [<span class="variable">y_test</span>-<span class="variable">y_pred_lr</span>, <span class="variable">y_test</span>-<span class="variable">y_pred_dt</span>, <span class="variable">y_test</span>-<span class="variable">y_pred_rf</span>],
+    [<span class="string">'Linear Regression'</span>, <span class="string">'Decision Tree'</span>, <span class="string">'Random Forest'</span>]):
+    ax.<span class="function">hist</span>(res, bins=<span class="number">30</span>)
+    ax.<span class="function">axvline</span>(<span class="number">0</span>, color=<span class="string">'red'</span>, ls=<span class="string">'--'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_residual_all.png" alt="Residual All"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>🔍</span><span>Analisis Residual</span></div>
+            <p>• <strong>Linear Regression</strong>: Residual tersebar sangat luas — model gagal menangkap pola non-linear.</p>
+            <p>• <strong>Decision Tree</strong>: Distribusi lebih sempit, tapi ada pola "step" karena prediksi diskrit dari leaf nodes.</p>
+            <p>• <strong>Random Forest</strong>: Distribusi paling sempit dan simetris di nol — prediksi paling konsisten dan tidak bias.</p></div>
+        </section>
+
+        <!-- ═══════════ SECTION 9 ═══════════ -->
+        <section id="s9" class="section">
+            <div class="section-header"><div class="section-number">9</div><h2 class="section-title">Insight & Kesimpulan</h2></div>
+            <div class="info-box success">
+                <div class="info-box-title"><span>📊</span><span>Ringkasan Temuan</span></div>
+                <p><strong>1. Performa Model</strong><br>Random Forest menjadi model terbaik (R² = 0.7523, RMSE = 16.44 m/hr), diikuti Decision Tree (R² = 0.6315), dan Linear Regression (R² = 0.2112). Hubungan parameter drilling vs ROP bersifat <strong>non-linear</strong>.</p>
+                <p><strong>2. Faktor Dominan terhadap ROP</strong><br>
+                • <strong>TMD/TVD (kedalaman)</strong> ~27%: Formasi semakin keras di kedalaman.<br>
+                • <strong>RPM</strong> 14.1%: Parameter operasional paling berpengaruh, bisa dikontrol langsung.<br>
+                • <strong>BIT TIME & TQ</strong> ~10.5%: Menandakan kondisi/keausan bit drilling.<br>
+                • <strong>FORMATION_CODE</strong> 5.1%: Feature engineering dari Praktikum 01 terbukti berguna.</p>
+                <p><strong>3. Implikasi Operasional</strong><br>Model Random Forest bisa digunakan untuk <em>real-time ROP prediction</em>, membantu driller mengoptimalkan RPM, FR, dan WOB berdasarkan kedalaman dan kondisi formasi.</p>
+                <p><strong>4. Potensi Improvement</strong><br>
+                • Hyperparameter tuning (GridSearchCV/RandomizedSearchCV)<br>
+                • Menghapus fitur redundan (TMD ≈ TVD, MW_DIFF ≈ MW OUT − MW IN)<br>
+                • Model lanjutan: Gradient Boosting (XGBoost, LightGBM)<br>
+                • Cross-validation (k-fold) untuk evaluasi lebih robust</p>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[23]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Simpan model terbaik</span>
+<span class="keyword">import</span> <span class="module">joblib</span>
+<span class="variable">joblib</span>.<span class="function">dump</span>(<span class="variable">rf</span>, <span class="string">'best_model_rf.pkl'</span>)
+<span class="variable">joblib</span>.<span class="function">dump</span>(<span class="variable">scaler</span>, <span class="string">'scaler.pkl'</span>)
+<span class="variable">joblib</span>.<span class="function">dump</span>(<span class="variable">oe</span>, <span class="string">'ordinal_encoder.pkl'</span>)
+<span class="function">print</span>(<span class="string">"✅ Model, scaler, dan encoder berhasil disimpan!"</span>)</pre></div>
+                <div class="cell-output"><pre>✅ Model, scaler, dan encoder berhasil disimpan!
+   📁 best_model_rf.pkl
+   📁 scaler.pkl
+   📁 ordinal_encoder.pkl</pre></div>
+            </div>
+        </section>
+
+        <!-- ═══════════ SECTION 10 ═══════════ -->
+        <section id="s10" class="section">
+            <div class="section-header"><div class="section-number">10</div><h2 class="section-title">Latihan Mandiri</h2></div>
+            <div class="exercise-box">
+                <div class="exercise-title"><span>📝</span><span>Soal Latihan</span></div>
+                <ol class="exercise-list">
+                    <li><strong>Ganti Target Variabel</strong><br>Gunakan <strong>TQ (lb.ft)</strong> sebagai target prediksi. Latih ketiga model dan bandingkan hasilnya. Apakah ranking model berubah?</li>
+                    <li><strong>Eksperimen Feature Selection</strong><br>Latih Random Forest hanya dengan 5 fitur teratas (TMD, RPM, TVD, BIT TIME, TQ). Bandingkan R² dengan model 14 fitur. Berapa informasi yang hilang?</li>
+                    <li><strong>Hyperparameter Tuning</strong><br>Ubah parameter <code>n_estimators</code> RF menjadi [10, 50, 100, 200, 500]. Plot R² vs n_estimators. Di mana titik diminishing returns?</li>
+                    <li><strong>Analisis Multicollinearity</strong><br>TMD dan TVD sangat berkorelasi. Coba drop salah satu, lalu latih ulang ketiga model. Apakah performa berubah signifikan?</li>
+                    <li><strong>Prediksi per Formasi</strong><br>Hitung RMSE per formasi untuk Random Forest. Formasi mana yang paling mudah dan paling sulit diprediksi? Jelaskan berdasarkan karakteristik data.</li>
+                </ol>
+            </div>
+            <div class="info-box warning">
+                <div class="info-box-title"><span>⚠️</span><span>Tugas Praktikum</span></div>
+                <p>Kerjakan soal latihan dalam format <strong>Jupyter Notebook (.ipynb)</strong>. Sertakan kode, output, dan interpretasi untuk setiap soal. Submit melalui e-learning sebelum pertemuan berikutnya.</p>
+            </div>
+        </section>
+    </main>
+    <footer class="footer"><div class="footer-content"><div class="footer-nav"><a href="praktikum-01.html" class="footer-link"><span>←</span><span>Praktikum 01</span></a><a href="praktikum-03.html" class="footer-link"><span>Praktikum 03</span><span>→</span></a></div><p class="footer-text">© 2026 Machine Learning in Geofisika - Teknik Geofisika ITERA</p></div></footer>
+</body>
+</html>
