@@ -107,6 +107,46 @@
         .footer-link:hover { background: var(--accent-primary); color: var(--bg-primary); transform: translateY(-2px); }
         .footer-text { color: var(--text-muted); font-size: 0.85rem; font-family: 'Manrope', sans-serif; }
         @media (max-width: 768px) { .header-content { flex-direction: column; gap: 1rem; } .hero { padding: 2rem 1.5rem; } .hero h1 { font-size: 1.8rem; } .main-container { padding: 1rem; } .toc-list { grid-template-columns: 1fr; } .footer-content { flex-direction: column; text-align: center; } .stats-grid, .param-grid { grid-template-columns: 1fr; } }
+        .dataset-download { margin-bottom: 2rem; }
+        .download-card {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem;
+            display: flex; align-items: center; gap: 1.5rem; transition: all 0.3s;
+        }
+        .download-card:hover {
+            border-color: var(--accent-primary); transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+        }
+        .download-icon {
+            width: 60px; height: 60px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; flex-shrink: 0;
+        }
+        .download-content { flex: 1; }
+        .download-content h3 {
+            font-family: 'Manrope', sans-serif; font-size: 1.2rem; font-weight: 700;
+            color: var(--text-primary); margin-bottom: 0.5rem;
+        }
+        .download-content p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem; }
+        .download-meta {
+            display: flex; gap: 1rem; flex-wrap: wrap;
+            font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+        }
+        .download-meta span { display: flex; align-items: center; gap: 0.25rem; }
+        .download-button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px; text-decoration: none; color: white;
+            font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 0.95rem;
+            display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s; white-space: nowrap;
+        }
+        .download-button:hover { transform: scale(1.05); box-shadow: 0 8px 16px rgba(0, 217, 255, 0.3); }
+        @media (max-width: 768px) {
+            .download-card { flex-direction: column; text-align: center; }
+            .download-meta { justify-content: center; }
+            .download-button { width: 100%; justify-content: center; }
+        }
     </style>
 </head>
 <body>
@@ -135,6 +175,28 @@
             <li class="toc-item"><a href="#s9"><span class="toc-number">9</span>Insight & Kesimpulan</a></li>
             <li class="toc-item"><a href="#s10"><span class="toc-number">10</span>Latihan Mandiri</a></li>
         </ul></nav>
+
+        <!-- TARUH SETELAH OBJECTIVES BOX, SEBELUM TABLE OF CONTENTS -->
+        <div class="dataset-download">
+            <div class="download-card">
+                <div class="download-icon">📊</div>
+                <div class="download-content">
+                    <h3>Dataset Praktikum</h3>
+                    <p>Well Dataset (Clean) — Hasil cleaning & Feature engineering dari Praktikum 01</p>
+                    <div class="download-meta">
+                        <span>📁 CSV Format</span>
+                        <span>💾 ~200 KB</span>
+                        <span>🔢 2,058 rows × 17 cols</span>
+                    </div>
+                </div>
+                <a href="https://drive.google.com/file/d/19EBgyq5a2utAuNa_aZpw4vJKi33AemxZ/view?usp=sharing" 
+                target="_blank" 
+                class="download-button">
+                    <span>⬇️</span>
+                    <span>Download Dataset</span>
+                </a>
+            </div>
+        </div>
 
         <!-- ═══════════ SECTION 1 ═══════════ -->
         <section id="s1" class="section">
