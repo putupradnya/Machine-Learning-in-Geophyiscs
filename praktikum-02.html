@@ -347,8 +347,9 @@ plt.<span class="function">style</span>.<span class="function">use</span>(<span 
 <span class="variable">df</span>[<span class="string">'DEPTH_CAT'</span>].<span class="function">value_counts</span>().<span class="function">reindex</span>(<span class="variable">depth_order</span>).<span class="function">plot</span>.<span class="function">bar</span>(ax=<span class="variable">axes</span>[<span class="number">1</span>])
 <span class="variable">axes</span>[<span class="number">1</span>].<span class="function">set_title</span>(<span class="string">'DEPTH_CAT Distribution'</span>)
 <span class="comment"># FORMATION_CODE mapping</span>
-<span class="variable">fm</span> = <span class="variable">df</span>.<span class="function">groupby</span>(<span class="string">'FORMATION_CODE'</span>)[<span class="string">'Formation'</span>].<span class="function">first</span>()
-<span class="variable">fm</span>.<span class="function">plot</span>.<span class="function">barh</span>(ax=<span class="variable">axes</span>[<span class="number">2</span>])
+<span class="variable">fm</span> = <span class="variable">df</span>.<span class="function">groupby</span>(<span class="string">'FORMATION_CODE'</span>)[<span class="string">'Formation'</span>].<span class="function">first</span>().<span class="function">reset_index</span>()
+<span class="variable">axes</span>[<span class="number">2</span>].<span class="function">barh</span>(<span class="variable">fm</span>[<span class="string">'Formation'</span>], <span class="variable">fm</span>[<span class="string">'FORMATION_CODE'</span>])
+<span class="variable">axes</span>[<span class="number">2</span>].<span class="function">set_title</span>(<span class="string">'FORMATION_CODE Mapping'</span>)
 plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
                 <div class="cell-output"><img src="asset/praktikum-02/fig_feature_engineering.png" alt="Feature Engineering"></div>
             </div>
@@ -678,6 +679,56 @@ plt.<span class="function">tight_layout</span>(); plt.<span class="function">sho
             <p>• <strong>Linear Regression</strong>: Residual tersebar sangat luas — model gagal menangkap pola non-linear.</p>
             <p>• <strong>Decision Tree</strong>: Distribusi lebih sempit, tapi ada pola "step" karena prediksi diskrit dari leaf nodes.</p>
             <p>• <strong>Random Forest</strong>: Distribusi paling sempit dan simetris di nol — prediksi paling konsisten dan tidak bias.</p></div>
+        
+        <h3 class="subsection-title">🔬 8.3 Prediksi vs Data Aktual pada Profil Kedalaman</h3>
+            <div class="content-text"><p>Visualisasi yang sangat penting dalam konteks geofisika: bagaimana prediksi model dibandingkan dengan data training pada profil <strong>TVD vs ROP</strong>. Plot ini menunjukkan apakah model mampu menangkap pola perubahan ROP di setiap zona kedalaman.</p></div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[23]</div></div>
+                <div class="cell-code"><pre><span class="comment"># TVD vs ROP — Training Data vs Predicted (ketiga model)</span>
+<span class="variable">tvd_train</span> = <span class="variable">df</span>.<span class="function">loc</span>[<span class="variable">X_train</span>.<span class="variable">index</span>, <span class="string">'TVD (m)'</span>]
+<span class="variable">tvd_test</span> = <span class="variable">df</span>.<span class="function">loc</span>[<span class="variable">X_test</span>.<span class="variable">index</span>, <span class="string">'TVD (m)'</span>]
+
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">3</span>, figsize=(<span class="number">18</span>, <span class="number">8</span>))
+<span class="keyword">for</span> ax, y_pred, name <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>,
+    [<span class="variable">y_pred_lr</span>, <span class="variable">y_pred_dt</span>, <span class="variable">y_pred_rf</span>],
+    [<span class="string">'Linear Regression'</span>, <span class="string">'Decision Tree'</span>, <span class="string">'Random Forest'</span>]):
+    ax.<span class="function">scatter</span>(<span class="variable">y_train</span>, <span class="variable">tvd_train</span>, s=<span class="number">12</span>, alpha=<span class="number">0.35</span>,
+              color=<span class="string">'#4a90d9'</span>, label=<span class="string">'Training Data'</span>)
+    ax.<span class="function">scatter</span>(<span class="variable">y_pred</span>, <span class="variable">tvd_test</span>, s=<span class="number">18</span>, alpha=<span class="number">0.75</span>,
+              color=<span class="string">'#ff8c42'</span>, label=<span class="string">'Predicted Data'</span>)
+    ax.<span class="function">invert_yaxis</span>()
+    ax.<span class="function">legend</span>(); ax.<span class="function">set_title</span>(name)
+    ax.<span class="function">set_xlabel</span>(<span class="string">'ROP (m/hr)'</span>); ax.<span class="function">set_ylabel</span>(<span class="string">'TVD (m)'</span>)
+plt.<span class="function">suptitle</span>(<span class="string">'Training Data vs Predicted — TVD vs ROP'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_tvd_vs_rop_prediction.png" alt="TVD vs ROP Prediction"></div>
+            </div>
+            <div class="notebook-cell">
+                <div class="cell-header"><div class="cell-type"><div class="cell-type-icon">Py</div><span>Python</span></div><div class="cell-number">[24]</div></div>
+                <div class="cell-code"><pre><span class="comment"># Actual vs Predicted pada test set (dengan garis error)</span>
+<span class="variable">fig</span>, <span class="variable">axes</span> = plt.<span class="function">subplots</span>(<span class="number">1</span>, <span class="number">3</span>, figsize=(<span class="number">18</span>, <span class="number">9</span>))
+<span class="keyword">for</span> ax, y_pred, name, color <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">axes</span>,
+    [<span class="variable">y_pred_lr</span>, <span class="variable">y_pred_dt</span>, <span class="variable">y_pred_rf</span>],
+    [<span class="string">'Linear Regression'</span>, <span class="string">'Decision Tree'</span>, <span class="string">'Random Forest'</span>],
+    [<span class="string">'#00d9ff'</span>, <span class="string">'#7c3aed'</span>, <span class="string">'#10b981'</span>]):
+    ax.<span class="function">scatter</span>(<span class="variable">y_test</span>, <span class="variable">tvd_test</span>, s=<span class="number">15</span>, alpha=<span class="number">0.5</span>,
+              color=<span class="string">'#4a90d9'</span>, label=<span class="string">'Actual (Test)'</span>)
+    ax.<span class="function">scatter</span>(<span class="variable">y_pred</span>, <span class="variable">tvd_test</span>, s=<span class="number">15</span>, alpha=<span class="number">0.5</span>,
+              color=color, label=<span class="string">'Predicted (Test)'</span>)
+    <span class="comment"># Garis error horizontal</span>
+    <span class="keyword">for</span> yt, yp, tvd <span class="keyword">in</span> <span class="function">zip</span>(<span class="variable">y_test</span>, <span class="variable">y_pred</span>, <span class="variable">tvd_test</span>):
+        ax.<span class="function">plot</span>([yt, yp], [tvd, tvd], color=<span class="string">'red'</span>, alpha=<span class="number">0.08</span>, lw=<span class="number">0.5</span>)
+    ax.<span class="function">invert_yaxis</span>()
+    ax.<span class="function">legend</span>(); ax.<span class="function">set_title</span>(name)
+    ax.<span class="function">set_xlabel</span>(<span class="string">'ROP (m/hr)'</span>); ax.<span class="function">set_ylabel</span>(<span class="string">'TVD (m)'</span>)
+plt.<span class="function">suptitle</span>(<span class="string">'Actual vs Predicted (Test Set) — TVD vs ROP'</span>)
+plt.<span class="function">tight_layout</span>(); plt.<span class="function">show</span>()</pre></div>
+                <div class="cell-output"><img src="asset/praktikum-02/fig_tvd_vs_rop_actual_pred.png" alt="TVD vs ROP Actual vs Pred"></div>
+            </div>
+            <div class="info-box"><div class="info-box-title"><span>🔬</span><span>Interpretasi Profil Kedalaman</span></div>
+            <p>• <strong>Linear Regression</strong>: Prediksi menyebar ke nilai negatif (tidak fisik!) — model linear gagal total menangkap pola non-linear ROP terhadap kedalaman.</p>
+            <p>• <strong>Decision Tree</strong>: Prediksi membentuk pola "garis vertikal" diskrit — tiap leaf node menghasilkan satu nilai konstan. Pola umum tertangkap, tapi kurang halus.</p>
+            <p>• <strong>Random Forest</strong>: Prediksi (orange) paling rapat mengikuti sebaran data training (biru) di seluruh zona kedalaman — model terbaik untuk menangkap variasi ROP per formasi.</p></div>
         </section>
 
         <!-- ═══════════ SECTION 9 ═══════════ -->
