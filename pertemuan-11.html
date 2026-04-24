@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 11: Hands-On Unsupervised Learning - ML in Geofisika</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #151922;
+            --bg-tertiary: #1e2530;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #7c3aed;
+            --text-primary: #e8edf4;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --border: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Serif', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 217, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .logo-text {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent-primary);
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 3rem 0 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(0, 217, 255, 0.2));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero h1 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 3rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--success), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 2rem auto;
+        }
+        
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-primary);
+        }
+        
+        .section-subtitle {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .content-text {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+        
+        .content-text ul, .content-text ol {
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .content-text li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .content-text code {
+            background: var(--bg-tertiary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-primary);
+        }
+        
+        .content-text table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .content-text table th,
+        .content-text table td {
+            padding: 0.8rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        
+        .content-text table th {
+            background: var(--bg-tertiary);
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+        
+        .content-text table tr:nth-child(even) {
+            background: var(--bg-tertiary);
+        }
+        
+        .praktikum-highlight {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(0, 217, 255, 0.15));
+            border: 2px solid var(--success);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .praktikum-highlight::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .praktikum-highlight-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .praktikum-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+        
+        .praktikum-description {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .praktikum-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--success), var(--accent-primary));
+            color: white;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .praktikum-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        }
+        
+        .praktikum-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .praktikum-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(124, 58, 237, 0.1));
+            border-left: 4px solid var(--accent-primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        
+        .info-box-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-primary);
+        }
+        
+        .info-box.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border-left-color: var(--success);
+        }
+        
+        .info-box.success .info-box-title {
+            color: var(--success);
+        }
+        
+        .info-box.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border-left-color: var(--warning);
+        }
+        
+        .info-box.warning .info-box-title {
+            color: var(--warning);
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.5rem;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            border: 3px solid var(--bg-primary);
+        }
+        
+        .timeline-time {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            color: var(--accent-primary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-content {
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .timeline-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .challenge-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--success);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+        }
+        
+        .challenge-level {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        
+        .challenge-level.easy {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .challenge-level.medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .challenge-level.hard {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .challenge-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .challenge-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto 2rem auto;
+        }
+        
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--accent-primary);
+        }
+        
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .challenge-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .praktikum-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">ML</div>
+                <span class="logo-text">ML in Geofisika</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="silabus.html" class="nav-link">📚 Silabus</a>
+                <a href="praktikum-03.html" class="nav-link">🔬 Praktikum</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="hero">
+            <div class="hero-badge">
+                💻 Pertemuan 11 | Week 11 | Hands-On Session
+            </div>
+            <h1>Hands-On: Unsupervised Learning</h1>
+            <p class="hero-description">
+                Praktik langsung implementasi K-Means clustering pada data well log South Barrow 18 
+                dengan validasi geologis menggunakan formation tops data
+            </p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <span>⏱️</span>
+                    <span>3 × 50 menit</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>💻</span>
+                    <span>Live Coding Session</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>🗿</span>
+                    <span>Geological Validation</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Praktikum Link Highlight -->
+        <div class="praktikum-highlight">
+            <div class="praktikum-highlight-content">
+                <div class="praktikum-title">🔬 Praktikum 03: K-Means Clustering pada Well Log</div>
+                <p class="praktikum-description">
+                    Tutorial lengkap step-by-step dengan 40 code cells, 11 visualizations, geological interpretation, 
+                    dan BONUS section tentang validasi dengan formation tops USGS!
+                </p>
+                <a href="praktikum-03.html" class="praktikum-button">
+                    🚀 Buka Praktikum 03
+                </a>
+                <div class="praktikum-meta">
+                    <div class="praktikum-meta-item">
+                        <span>📊</span>
+                        <span>South Barrow 18 Dataset</span>
+                    </div>
+                    <div class="praktikum-meta-item">
+                        <span>🗿</span>
+                        <span>USGS Formation Tops</span>
+                    </div>
+                    <div class="praktikum-meta-item">
+                        <span>📈</span>
+                        <span>4 Clusters + Geological Validation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning Objectives -->
+        <div class="section">
+            <h2 class="section-title">🎯 Tujuan Hands-On Session</h2>
+            <div class="content-text">
+                <p>Pada akhir session ini, mahasiswa diharapkan mampu:</p>
+                <ol>
+                    <li><strong>Implement end-to-end clustering workflow:</strong> Load LAS file → preprocessing → clustering → validation → geological interpretation</li>
+                    <li><strong>Integrate stratigraphic data:</strong> Load formation tops, plot boundaries, analyze cluster distribution per formation</li>
+                    <li><strong>Validate clustering results:</strong> Apply Silhouette, Davies-Bouldin, Calinski-Harabasz, plus external metrics (ARI, NMI)</li>
+                    <li><strong>Interpret geologis:</strong> Understand relationship antara lithofacies (clusters) dan chronostratigraphic units (formations)</li>
+                    <li><strong>Troubleshoot common issues:</strong> Missing values, scaling, parameter tuning, convergence problems</li>
+                    <li><strong>Compare algorithms:</strong> K-Means vs Hierarchical vs DBSCAN pada same dataset</li>
+                    <li><strong>Visualize professionally:</strong> Well log plots with formation tops, cross-plots, stratigraphic columns</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Session Structure -->
+        <div class="section">
+            <h2 class="section-title">📋 Struktur Session (150 menit)</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-time">0-20 min</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">📖 Review & Setup</div>
+                        <p class="content-text">
+                            • Quick review: Unsupervised learning & validation metrics (Pertemuan 09-10)<br>
+                            • Environment setup: Jupyter Notebook, libraries installation<br>
+                            • Download datasets: <strong>SB18.LAS + SB18TOPS.txt</strong> dari Praktikum 03<br>
+                            • Introduction to South Barrow 18 stratigraphy (USGS data)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-time">20-50 min</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">💻 Live Coding Part 1: Data Loading & EDA</div>
+                        <p class="content-text">
+                            • Load LAS file dengan <code>lasio</code><br>
+                            • Load formation tops dari <code>SB18TOPS.txt</code><br>
+                            • Exploratory Data Analysis: distributions, cross-plots, well log display<br>
+                            • Handle missing values strategy<br>
+                            • Feature selection & scaling dengan StandardScaler<br>
+                            <strong>Follow: Praktikum 03 Section 2-5</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-time">50-90 min</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">🎯 Live Coding Part 2: K-Means + Validation</div>
+                        <p class="content-text">
+                            • Determine optimal K: Elbow Method + Silhouette Analysis<br>
+                            • Implement K-Means clustering (K=4)<br>
+                            • Compute internal metrics (Silhouette, DB, CH)<br>
+                            • Visualize clustered well logs & cross-plots<br>
+                            • <strong>Plot formation tops as red dashed lines</strong><br>
+                            <strong>Follow: Praktikum 03 Section 6-8</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-time">90-120 min</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">🗿 Geological Interpretation & Validation</div>
+                        <p class="content-text">
+                            • Interpret cluster centroids → lithofacies identification<br>
+                            • Analyze depth distribution by cluster<br>
+                            • <strong>Assign formations to data points</strong><br>
+                            • <strong>Cross-tabulation: Cluster vs Formation distribution</strong><br>
+                            • Compute external metrics (ARI, NMI) dengan proper interpretation<br>
+                            • Discuss: Why clusters cross-cut formation boundaries (NORMAL!)<br>
+                            <strong>Follow: Praktikum 03 Section 9-10 + BONUS</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-time">120-150 min</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">🔄 Challenges & Q&A</div>
+                        <p class="content-text">
+                            • Work on coding challenges (formation-specific clustering, heatmaps, etc.)<br>
+                            • Try alternative algorithms (Hierarchical, DBSCAN)<br>
+                            • Open discussion: troubleshooting, best practices<br>
+                            • Wrap-up & assignment briefing (must include formation tops validation)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preparation -->
+        <div class="section">
+            <h2 class="section-title">🛠️ Persiapan Sebelum Session</h2>
+            
+            <h3 class="section-subtitle">1. Software & Environment</h3>
+            <div class="info-box">
+                <div class="info-box-title">💻 Required Setup</div>
+                <p class="content-text">
+                    <strong>Python 3.8+</strong> dengan libraries berikut:
+                </p>
+                <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-secondary);">
+pip install pandas numpy matplotlib seaborn lasio scikit-learn scipy
+                </pre>
+                <p class="content-text" style="margin-top: 1rem;">
+                    <strong>Recommended IDE:</strong> Jupyter Notebook, VS Code, atau Google Colab
+                </p>
+            </div>
+
+            <h3 class="section-subtitle">2. Datasets (Download BOTH!)</h3>
+            <div class="content-text">
+                <p><strong>Download dari Praktikum 03:</strong></p>
+                <ul>
+                    <li><strong>SB18.LAS</strong> - South Barrow 18 Well Log (Alaska, USA)
+                        <ul>
+                            <li>Size: ~786 KB</li>
+                            <li>Records: 4,053 depth points (98-2,124 ft)</li>
+                            <li>Curves: 13 log curves (GR, RHOB, NPHI, DT, SP, ILD, dll.)</li>
+                        </ul>
+                    </li>
+                    <li><strong>SB18TOPS.txt</strong> - Formation Tops (USGS Open File Report 00-200)
+                        <ul>
+                            <li>Size: <1 KB</li>
+                            <li>Source: Gryc, George, Ed., 1988</li>
+                            <li>Content: 4 formation boundaries dengan depths</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <h3 class="section-subtitle">3. Study Materials</h3>
+            <div class="content-text">
+                <p>Review materi berikut sebelum session:</p>
+                <ul>
+                    <li>📚 <a href="pertemuan-09.html" style="color: var(--accent-primary);">Pertemuan 09: Unsupervised Learning Concepts</a></li>
+                    <li>📊 <a href="pertemuan-10.html" style="color: var(--accent-primary);">Pertemuan 10: Evaluation Metrics</a></li>
+                    <li>🔬 <a href="praktikum-03.html" style="color: var(--accent-primary);">Praktikum 03: Complete Tutorial + BONUS Geological Validation</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Geological Context -->
+        <div class="section">
+            <h2 class="section-title">🗿 Geological Context: Formation Tops</h2>
+            
+            <div class="content-text">
+                <p>
+                    South Barrow 18 memiliki data <strong>formation tops</strong> dari USGS (Gryc, 1988) 
+                    yang memberikan ground truth stratigraphic boundaries. Data ini sangat penting untuk 
+                    <strong>memvalidasi dan menginterpretasi clustering results</strong> dalam konteks geologis.
+                </p>
+            </div>
+
+            <div class="info-box success">
+                <div class="info-box-title">📊 Formation Tops Data (USGS)</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Formation</th>
+                            <th>Top Depth</th>
+                            <th>Lithology</th>
+                            <th>Age</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Gubik Formation</strong></td>
+                            <td>18 ft</td>
+                            <td>Unconsolidated sediments</td>
+                            <td>Quaternary</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Torok Formation</strong></td>
+                            <td>75 ft</td>
+                            <td>Shale (deep marine)</td>
+                            <td>Cretaceous</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pebble Shale Unit</strong></td>
+                            <td>1,375 ft</td>
+                            <td>Shale with dropstones</td>
+                            <td>Cretaceous</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Kingak Shale</strong></td>
+                            <td>1,760 ft</td>
+                            <td>Marine shale</td>
+                            <td>Jurassic</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="margin-top: 1rem; font-size: 0.9rem;">
+                    <strong>Source:</strong> USGS Open File Report 00-200 (Gryc, George, Ed., 1988) | 
+                    <a href="SB18TOPS.txt" download style="color: var(--success);">Download SB18TOPS.txt</a>
+                </p>
+            </div>
+
+            <h3 class="section-subtitle">Expected Clustering Behavior</h3>
+            <div class="content-text">
+                <p><strong>⚠️ Critical Understanding:</strong> Formation boundaries ≠ Cluster boundaries!</p>
+                <ul>
+                    <li><strong>Formations:</strong> Chronostratigraphic units (defined by age + depositional environment)</li>
+                    <li><strong>Clusters:</strong> Petrophysical facies (defined by well log response patterns)</li>
+                    <li><strong>Relationship:</strong> NOT 1:1 mapping! One formation can contain multiple lithofacies</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-title">💡 What to Expect in Session</div>
+                <ul>
+                    <li><strong>Torok Formation (75-1,375 ft):</strong> Lithologically heterogeneous (interbedded shale/silt/sand) 
+                        → expect MIXED clusters within this formation</li>
+                    <li><strong>Pebble Shale Unit (1,375-1,760 ft):</strong> Dominant shale matrix + dropstones/pebbles 
+                        → cluster variability reflecting this internal heterogeneity</li>
+                    <li><strong>Kingak Shale (1,760-2,124 ft):</strong> Marine shale sequence 
+                        → relatively uniform but still shows internal facies changes</li>
+                    <li><strong>Formation tops:</strong> Will be plotted as <span style="color: var(--danger);">red dashed lines</span> 
+                        on well logs for geological reference, NOT as validation targets!</li>
+                </ul>
+            </div>
+
+            <h3 class="section-subtitle">Why Clusters Cross-Cut Formations (This is NORMAL!)</h3>
+            <div class="content-text">
+                <p><strong>Geologically Expected Behavior:</strong></p>
+                <ul>
+                    <li>Formations capture <strong>time + depositional environment</strong> (chronostratigraphy)</li>
+                    <li>Clusters capture <strong>petrophysical properties</strong> at 0.5 ft resolution</li>
+                    <li>Single formation dapat mengandung multiple lithofacies (e.g., Torok = shale + silt + sandstone interbeds)</li>
+                    <li>Clustering reveals lithological heterogeneity WITHIN formations → valuable for reservoir modeling!</li>
+                </ul>
+            </div>
+
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ External Validation Caveat</div>
+                <p>Ketika compute ARI & NMI comparing clusters to formations:</p>
+                <ul>
+                    <li><strong>Low scores (~0.04-0.13) are EXPECTED</strong> dan geologically reasonable</li>
+                    <li>These metrics designed untuk compare clusterings, NOT lithofacies vs stratigraphy</li>
+                    <li>Low scores CONFIRM clustering captures heterogeneity within formations</li>
+                    <li>High scores would actually be suspicious (oversimplified geology)</li>
+                </ul>
+                <p><strong>Takeaway:</strong> Use formation tops as geological CONTEXT, not validation TARGETS!</p>
+            </div>
+        </div>
+
+        <!-- Challenges -->
+        <div class="section">
+            <h2 class="section-title">🏆 Coding Challenges</h2>
+            
+            <div class="content-text">
+                <p>Setelah menyelesaikan workflow dasar dari Praktikum 03, coba challenges berikut. 
+                <strong>Formation tops data tersedia untuk validasi geologis!</strong></p>
+            </div>
+
+            <div class="challenge-grid">
+                <div class="challenge-card">
+                    <span class="challenge-level easy">EASY</span>
+                    <h3 class="challenge-title">Challenge 1: Plot Formation Tops</h3>
+                    <p class="challenge-description">
+                        Add <span style="color: var(--danger);">red dashed horizontal lines</span> pada well log plots untuk mark formation boundaries. 
+                        Use <code>plt.axhline(y=depth, color='red', linestyle='--')</code> untuk overlay tops 
+                        (Torok: 75 ft, Pebble Shale: 1,375 ft, Kingak: 1,760 ft).
+                    </p>
+                </div>
+
+                <div class="challenge-card">
+                    <span class="challenge-level easy">EASY</span>
+                    <h3 class="challenge-title">Challenge 2: Formation Assignment</h3>
+                    <p class="challenge-description">
+                        Write function <code>assign_formation(depth)</code> untuk assign formation name ke setiap depth point. 
+                        Create new column <code>df_clean['Formation']</code>. 
+                        Print cluster distribution per formation using <code>pd.crosstab()</code> dengan <code>normalize='index'</code>.
+                    </p>
+                </div>
+
+                <div class="challenge-card">
+                    <span class="challenge-level medium">MEDIUM</span>
+                    <h3 class="challenge-title">Challenge 3: Formation-Specific Clustering</h3>
+                    <p class="challenge-description">
+                        Subset data untuk Torok Formation only (75-1,375 ft range). 
+                        Run K-Means clustering again pada this interval dengan K=2 to 6. 
+                        Compare optimal K dan cluster characteristics dengan full-dataset clustering. 
+                        Interpret differences!
+                    </p>
+                </div>
+
+                <div class="challenge-card">
+                    <span class="challenge-level medium">MEDIUM</span>
+                    <h3 class="challenge-title">Challenge 4: Cross-Tab Heatmap</h3>
+                    <p class="challenge-description">
+                        Create heatmap showing cluster distribution (%) across formations. 
+                        Use <code>seaborn.heatmap()</code> dengan <code>pd.crosstab()</code> result. 
+                        Annotate percentages di each cell dengan <code>annot=True, fmt='.1f'</code>. 
+                        Which formation shows highest cluster diversity?
+                    </p>
+                </div>
+
+                <div class="challenge-card">
+                    <span class="challenge-level hard">HARD</span>
+                    <h3 class="challenge-title">Challenge 5: External Validation</h3>
+                    <p class="challenge-description">
+                        Compute Adjusted Rand Index (ARI) dan Normalized Mutual Information (NMI) 
+                        comparing cluster labels dengan formation labels. 
+                        Use <code>sklearn.metrics</code>. 
+                        <strong>CRITICAL:</strong> Explain mengapa low scores (~0.04) are EXPECTED dan geologically reasonable!
+                    </p>
+                </div>
+
+                <div class="challenge-card">
+                    <span class="challenge-level hard">HARD</span>
+                    <h3 class="challenge-title">Challenge 6: Stratigraphic Column</h3>
+                    <p class="challenge-description">
+                        Create publication-quality stratigraphic column plot showing: 
+                        (1) Formation names & boundaries dengan different colors, 
+                        (2) Cluster proportions per formation as stacked horizontal bars, 
+                        (3) Mean GR values per formation. 
+                        Make it professional & visually clear!
+                    </p>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <div class="info-box-title">💡 Challenge Tips & Hints</div>
+                <ul>
+                    <li><strong>Parsing tops file:</strong> Parse <code>SB18TOPS.txt</code> programmatically atau use dictionary hardcoded</li>
+                    <li><strong>Depth filtering:</strong> Use boolean indexing: <code>df[(df.index >= 75) & (df.index < 1375)]</code></li>
+                    <li><strong>Formation assignment:</strong> Use <code>df.index.map(assign_formation)</code> untuk vectorized operation</li>
+                    <li><strong>External metrics:</strong> Import <code>adjusted_rand_score, normalized_mutual_info_score</code> from sklearn.metrics</li>
+                    <li><strong>Interpretation key:</strong> Low ARI/NMI ≠ bad clustering! Means formations contain multiple lithofacies!</li>
+                    <li><strong>Visualization:</strong> Use <code>axhline()</code> untuk formation tops, different colors untuk different formations</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="section">
+            <h2 class="section-title">🔧 Common Issues & Solutions</h2>
+            
+            <h3 class="section-subtitle">1. Missing Values Error</h3>
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ Problem</div>
+                <p><code>ValueError: Input contains NaN</code> ketika fit K-Means</p>
+            </div>
+            <div class="info-box success">
+                <div class="info-box-title">✅ Solution</div>
+                <p>Always check dan handle missing values sebelum clustering:</p>
+                <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-secondary);">
+df_clean = df[features].dropna()  # Remove rows with any NaN
+# OR
+df_filled = df[features].fillna(df[features].mean())  # Impute with mean
+                </pre>
+            </div>
+
+            <h3 class="section-subtitle">2. Scaling Issues</h3>
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ Problem</div>
+                <p>Clusters dominated by features dengan large ranges (e.g., GR: 0-200 dominates RHOB: 2.4-2.6)</p>
+            </div>
+            <div class="info-box success">
+                <div class="info-box-title">✅ Solution</div>
+                <p>ALWAYS scale features sebelum distance-based clustering:</p>
+                <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-secondary);">
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df_clean[features])
+                </pre>
+            </div>
+
+            <h3 class="section-subtitle">3. Formation Tops Not Showing on Plot</h3>
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ Problem</div>
+                <p>Red dashed lines untuk formation tops tidak muncul di plot</p>
+            </div>
+            <div class="info-box success">
+                <div class="info-box-title">✅ Solution</div>
+                <p>Check depth range dan ensure formation tops within plot limits:</p>
+                <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-secondary);">
+# Check if formation top is within data range
+for fm_name, fm_depth in formation_tops.items():
+    if fm_depth > depth.min() and fm_depth < depth.max():
+        ax.axhline(y=fm_depth, color='red', linestyle='--', 
+                   linewidth=2, alpha=0.7, label=fm_name)
+                </pre>
+            </div>
+
+            <h3 class="section-subtitle">4. Low External Validation Scores</h3>
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ "Problem"</div>
+                <p>ARI = 0.043, NMI = 0.127 → "apakah clustering gagal?"</p>
+            </div>
+            <div class="info-box success">
+                <div class="info-box-title">✅ Solution (Understanding)</div>
+                <p>Low scores are <strong>EXPECTED and GEOLOGICALLY CORRECT</strong>!</p>
+                <ul>
+                    <li>Formations = chronostratigraphic units (age + environment)</li>
+                    <li>Clusters = petrophysical facies (lithology patterns)</li>
+                    <li>These are COMPLEMENTARY classifications, not identical</li>
+                    <li>Low ARI/NMI confirms clustering reveals lithological heterogeneity WITHIN formations</li>
+                    <li>Use formation tops as geological CONTEXT, not validation TARGETS</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="section">
+            <h2 class="section-title">📚 Additional Resources</h2>
+            
+            <h3 class="section-subtitle">Documentation & Tutorials</h3>
+            <div class="content-text">
+                <ul>
+                    <li><a href="https://scikit-learn.org/stable/modules/clustering.html" target="_blank" style="color: var(--accent-primary);">Scikit-learn Clustering Guide</a></li>
+                    <li><a href="https://lasio.readthedocs.io/" target="_blank" style="color: var(--accent-primary);">LASIO Documentation</a></li>
+                    <li><a href="https://matplotlib.org/stable/gallery/index.html" target="_blank" style="color: var(--accent-primary);">Matplotlib Gallery</a></li>
+                    <li><a href="https://seaborn.pydata.org/examples/index.html" target="_blank" style="color: var(--accent-primary);">Seaborn Examples</a></li>
+                </ul>
+            </div>
+
+            <h3 class="section-subtitle">Geological References</h3>
+            <div class="content-text">
+                <ul>
+                    <li><strong>USGS Open File Report 00-200:</strong> Selected Data from Fourteen Wildcat Wells in NPR-Alaska</li>
+                    <li><strong>Gryc (1988):</strong> Geology and exploration of the National Petroleum Reserve in Alaska</li>
+                    <li><strong>Alaska North Slope Stratigraphy:</strong> Bird & Magoon (1987)</li>
+                </ul>
+            </div>
+
+            <h3 class="section-subtitle">Practice Datasets</h3>
+            <div class="content-text">
+                <ul>
+                    <li><strong>Kaggle:</strong> FORCE 2020 Well Log & Lithology Prediction Competition</li>
+                    <li><strong>Kansas Geological Survey:</strong> Open well log data dengan core descriptions</li>
+                    <li><strong>NLOG (Netherlands):</strong> Dutch offshore wells dengan formation tops</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Assignment -->
+        <div class="section">
+            <h2 class="section-title">📝 Assignment Post-Session</h2>
+            
+            <div class="content-text">
+                <p><strong>Deadline:</strong> 1 minggu setelah hands-on session</p>
+                
+                <p><strong>Deliverables:</strong></p>
+                <ol>
+                    <li><strong>Jupyter Notebook (.ipynb)</strong> dengan complete workflow:
+                        <ul>
+                            <li>Load SB18.LAS + SB18TOPS.txt datasets</li>
+                            <li>EDA dengan visualizations</li>
+                            <li>K-Means clustering implementation</li>
+                            <li>Validation dengan internal metrics (Silhouette, DB, CH)</li>
+                            <li><strong>Formation tops integration:</strong> plot boundaries, assign formations, cross-tabulation</li>
+                            <li><strong>External validation:</strong> ARI, NMI dengan proper geological interpretation</li>
+                            <li>At least 2 challenges completed dari coding challenges list</li>
+                        </ul>
+                    </li>
+                    
+                    <li><strong>Report (PDF, max 5 pages)</strong> mencakup:
+                        <ul>
+                            <li>Methodology summary</li>
+                            <li>Results: optimal K determination, cluster characteristics</li>
+                            <li><strong>Geological interpretation:</strong> cluster facies analysis per formation</li>
+                            <li><strong>Formation tops validation:</strong> cross-tab analysis, external metrics interpretation</li>
+                            <li><strong>Discussion:</strong> Why clusters cross-cut formations, geological significance</li>
+                            <li>Challenges completed dengan screenshots/results</li>
+                            <li>Reflection: what worked, what didn't, lessons learned</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <p><strong>Grading Criteria:</strong></p>
+                <ul>
+                    <li>Code quality & completeness (30%) - including formation tops integration</li>
+                    <li>Proper use of validation metrics (25%) - both internal & external</li>
+                    <li>Geological interpretation (25%) - emphasis on formations vs clusters understanding</li>
+                    <li>Challenges & creativity (20%) - quality over quantity</li>
+                </ul>
+            </div>
+
+            <div class="info-box success">
+                <div class="info-box-title">💡 Tips untuk Success</div>
+                <ul>
+                    <li><strong>Start early!</strong> Don't wait until last minute - formation tops integration adds complexity</li>
+                    <li><strong>Comment your code clearly:</strong> Especially formation assignment logic</li>
+                    <li><strong>Include visualizations:</strong> Well logs with formation tops, cross-tab heatmap</li>
+                    <li><strong>Reference Praktikum 03:</strong> Use BONUS section as template untuk formation validation</li>
+                    <li><strong>Interpret geologically:</strong> Don't just report numbers - explain what they mean!</li>
+                    <li><strong>Ask questions:</strong> Use forum/office hours jika stuck with formation tops parsing</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-title">🎯 Key Requirements Checklist</div>
+                <ul>
+                    <li>✅ Load BOTH datasets (SB18.LAS + SB18TOPS.txt)</li>
+                    <li>✅ Plot formation tops as red dashed lines on well logs</li>
+                    <li>✅ Assign formation names to each depth point</li>
+                    <li>✅ Create cross-tabulation: Cluster vs Formation</li>
+                    <li>✅ Compute ARI & NMI with PROPER geological interpretation</li>
+                    <li>✅ Explain why low external scores are EXPECTED</li>
+                    <li>✅ Complete at least 2 coding challenges</li>
+                    <li>✅ Include reflection on formations vs lithofacies concepts</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-nav">
+            <a href="pertemuan-10.html" class="footer-link">
+                <span>←</span>
+                <span>Previous: Pertemuan 10 - Evaluasi Model</span>
+            </a>
+            <a href="pertemuan-12.html" class="footer-link">
+                <span>Next: Pertemuan 12</span>
+                <span>→</span>
+            </a>
+        </div>
+        <div class="footer-text">
+            © 2025 Machine Learning dalam Geofisika - Institut Teknologi Sumatera
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 10: Evaluasi Model Unsupervised Learning - ML in Geofisika</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #151922;
+            --bg-tertiary: #1e2530;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #7c3aed;
+            --text-primary: #e8edf4;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --border: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Serif', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 217, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .logo-text {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent-primary);
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 3rem 0 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(0, 217, 255, 0.2));
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: var(--accent-primary);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero h1 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 3rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 2rem auto;
+        }
+        
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-primary);
+        }
+        
+        .section-subtitle {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .content-text {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+        
+        .content-text ul, .content-text ol {
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .content-text li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .content-text code {
+            background: var(--bg-tertiary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-primary);
+        }
+        
+        .slides-container {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .slides-container iframe {
+            width: 100%;
+            height: 600px;
+            border-radius: 8px;
+            border: none;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(124, 58, 237, 0.1));
+            border-left: 4px solid var(--accent-primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        
+        .info-box-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-primary);
+        }
+        
+        .info-box.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border-left-color: var(--warning);
+        }
+        
+        .info-box.warning .info-box-title {
+            color: var(--warning);
+        }
+        
+        .info-box.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border-left-color: var(--success);
+        }
+        
+        .info-box.success .info-box-title {
+            color: var(--success);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .metric-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+        }
+        
+        .metric-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .metric-formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin: 0.5rem 0;
+            color: var(--accent-secondary);
+        }
+        
+        .metric-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .metric-range {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        
+        .comparison-table th {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            text-align: left;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            color: var(--accent-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .comparison-table td {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        
+        .comparison-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto 2rem auto;
+        }
+        
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--accent-primary);
+        }
+        
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .slides-container iframe {
+                height: 400px;
+            }
+            
+            .footer-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .comparison-table {
+                font-size: 0.85rem;
+            }
+            
+            .comparison-table th,
+            .comparison-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">ML</div>
+                <span class="logo-text">ML in Geofisika</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="silabus.html" class="nav-link">📚 Silabus</a>
+                <a href="praktikum-03.html" class="nav-link">🔬 Praktikum</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="hero">
+            <div class="hero-badge">
+                📊 Pertemuan 10 | Week 10
+            </div>
+            <h1>Evaluasi Model Unsupervised Learning</h1>
+            <p class="hero-description">
+                Metode validasi dan evaluasi kualitas clustering: internal metrics, external metrics, 
+                stability analysis, dan best practices untuk model unsupervised learning
+            </p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <span>⏱️</span>
+                    <span>3 × 50 menit</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>🎯</span>
+                    <span>Silhouette, Davies-Bouldin, Calinski-Harabasz</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>📈</span>
+                    <span>Cluster Validation & Optimization</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide Presentation -->
+        <div class="section">
+            <h2 class="section-title">📽️ Slide Presentation</h2>
+            <div class="slides-container">
+                <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQUDL0BEKQGedzsoqSA59sOR8rrzTjDXj8CzlP3dBzoh3tpM6gM_SxRA6tVE4hq1Q/embed?start=false&loop=false&delayms=3000" frameborder="0" width="1440" height="839" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title">💡 Cara Menggunakan Slide</div>
+                <p>Gunakan tombol panah atau klik untuk navigasi slide. Tekan tombol fullscreen untuk tampilan layar penuh. Slide dapat diakses kapan saja untuk review materi.</p>
+            </div>
+        </div>
+
+        <!-- Learning Objectives -->
+        <div class="section">
+            <h2 class="section-title">🎯 Tujuan Pembelajaran</h2>
+            <div class="content-text">
+                <p>Setelah menyelesaikan pertemuan ini, mahasiswa diharapkan mampu:</p>
+                <ol>
+                    <li>Memahami tantangan evaluasi model unsupervised learning (tidak ada ground truth labels)</li>
+                    <li>Mengimplementasikan internal validation metrics (Silhouette Score, Davies-Bouldin Index, Calinski-Harabasz)</li>
+                    <li>Menerapkan external validation metrics ketika ground truth tersedia (Rand Index, Adjusted Rand Index, NMI)</li>
+                    <li>Menggunakan Elbow Method dan Gap Statistic untuk menentukan jumlah cluster optimal</li>
+                    <li>Melakukan stability analysis dan cross-validation untuk clustering</li>
+                    <li>Menginterpretasi dan membandingkan hasil dari berbagai metrics</li>
+                    <li>Memilih metrics yang appropriate untuk konteks geofisika spesifik</li>
+                    <li>Mengidentifikasi dan menghindari common pitfalls dalam evaluasi clustering</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Internal Validation Metrics -->
+        <div class="section">
+            <h2 class="section-title">📊 Internal Validation Metrics</h2>
+            
+            <div class="content-text">
+                <p>Internal metrics mengevaluasi kualitas clustering berdasarkan data itu sendiri <strong>tanpa memerlukan ground truth labels</strong>. Metrics ini mengukur seberapa baik clusters terbentuk berdasarkan compactness (within-cluster similarity) dan separation (between-cluster dissimilarity).</p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <h3 class="metric-title">Silhouette Score</h3>
+                    <div class="metric-formula">s(i) = (b(i) - a(i)) / max(a(i), b(i))</div>
+                    <p class="metric-description">
+                        Mengukur seberapa mirip suatu data point dengan cluster-nya sendiri dibanding cluster lain. 
+                        <code>a(i)</code> = avg distance dalam cluster, <code>b(i)</code> = avg distance ke cluster terdekat.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> -1 to +1 | <strong>Optimal:</strong> mendekati +1
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">📐</div>
+                    <h3 class="metric-title">Davies-Bouldin Index</h3>
+                    <div class="metric-formula">DB = (1/k) Σ max((σᵢ + σⱼ) / d(cᵢ,cⱼ))</div>
+                    <p class="metric-description">
+                        Rasio rata-rata similarity antara setiap cluster dengan cluster yang paling mirip dengannya. 
+                        Mengukur average worst-case similarity.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> 0 to ∞ | <strong>Optimal:</strong> mendekati 0
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">📈</div>
+                    <h3 class="metric-title">Calinski-Harabasz Index</h3>
+                    <div class="metric-formula">CH = (SSB/(k-1)) / (SSW/(n-k))</div>
+                    <p class="metric-description">
+                        Variance ratio criterion: rasio between-cluster dispersion (SSB) terhadap within-cluster dispersion (SSW). 
+                        Higher is better.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> 0 to ∞ | <strong>Optimal:</strong> nilai tinggi
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">🎲</div>
+                    <h3 class="metric-title">Inertia (WCSS)</h3>
+                    <div class="metric-formula">Inertia = Σ Σ ||xᵢ - μₖ||²</div>
+                    <p class="metric-description">
+                        Within-Cluster Sum of Squares. Total squared distance dari setiap point ke centroid cluster-nya. 
+                        Digunakan dalam Elbow Method untuk K-Means.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> 0 to ∞ | <strong>Optimal:</strong> nilai rendah
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">🔍</div>
+                    <h3 class="metric-title">Dunn Index</h3>
+                    <div class="metric-formula">DI = min(δ(Cᵢ,Cⱼ)) / max(Δₖ)</div>
+                    <p class="metric-description">
+                        Rasio minimum inter-cluster distance terhadap maximum intra-cluster distance. 
+                        Mengukur compact and well-separated clusters.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> 0 to ∞ | <strong>Optimal:</strong> nilai tinggi
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">📊</div>
+                    <h3 class="metric-title">Gap Statistic</h3>
+                    <div class="metric-formula">Gap(k) = E[log(Wₖ)] - log(Wₖ)</div>
+                    <p class="metric-description">
+                        Membandingkan within-cluster dispersion dengan expected value dari null reference distribution. 
+                        Optimal K = smallest k dimana Gap(k) ≥ Gap(k+1) - s_{k+1}.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Optimal:</strong> K dengan gap terbesar
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ Important Notes</div>
+                <ul>
+                    <li><strong>Tidak ada single best metric:</strong> Berbeda metrics bisa memberikan hasil berbeda untuk data yang sama</li>
+                    <li><strong>Use multiple metrics:</strong> Kombinasikan beberapa metrics untuk validasi yang robust</li>
+                    <li><strong>Domain knowledge:</strong> Interpretasi harus dikombinasikan dengan pemahaman geologis/geofisika</li>
+                    <li><strong>Computational cost:</strong> Beberapa metrics (Gap Statistic, Dunn) expensive untuk large datasets</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- External Validation Metrics -->
+        <div class="section">
+            <h2 class="section-title">🔗 External Validation Metrics</h2>
+            
+            <div class="content-text">
+                <p>External metrics digunakan ketika <strong>ground truth labels tersedia</strong> (supervised evaluation of unsupervised learning). Berguna untuk:</p>
+                <ul>
+                    <li>Validasi clustering terhadap known facies/lithology labels</li>
+                    <li>Benchmarking berbagai algoritma clustering</li>
+                    <li>Semi-supervised scenarios dalam geofisika</li>
+                </ul>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">🎲</div>
+                    <h3 class="metric-title">Rand Index (RI)</h3>
+                    <div class="metric-formula">RI = (TP + TN) / (TP + FP + FN + TN)</div>
+                    <p class="metric-description">
+                        Mengukur similarity antara dua clustering (predicted vs true). 
+                        TP = pairs correctly in same cluster, TN = pairs correctly in different clusters.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> 0 to 1 | <strong>Optimal:</strong> 1
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">✨</div>
+                    <h3 class="metric-title">Adjusted Rand Index (ARI)</h3>
+                    <div class="metric-formula">ARI = (RI - E[RI]) / (max(RI) - E[RI])</div>
+                    <p class="metric-description">
+                        Adjusted untuk chance: mengkoreksi Rand Index terhadap random clustering. 
+                        ARI = 0 untuk random clustering, ARI = 1 untuk perfect match.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> -1 to 1 | <strong>Optimal:</strong> 1
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">🔢</div>
+                    <h3 class="metric-title">Normalized Mutual Information</h3>
+                    <div class="metric-formula">NMI = 2 * MI(U,V) / (H(U) + H(V))</div>
+                    <p class="metric-description">
+                        Mengukur mutual information antara cluster assignments, normalized by entropy. 
+                        Information-theoretic measure of clustering similarity.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> 0 to 1 | <strong>Optimal:</strong> 1
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">📏</div>
+                    <h3 class="metric-title">Fowlkes-Mallows Index</h3>
+                    <div class="metric-formula">FMI = √(TP/(TP+FP) * TP/(TP+FN))</div>
+                    <p class="metric-description">
+                        Geometric mean of precision and recall for pairwise comparisons. 
+                        Balanced measure antara cluster purity dan completeness.
+                    </p>
+                    <div class="metric-range">
+                        <strong>Range:</strong> 0 to 1 | <strong>Optimal:</strong> 1
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-title">🔬 Aplikasi dalam Geofisika</div>
+                <p>External metrics sangat berguna untuk:</p>
+                <ul>
+                    <li>Validasi clustering well log terhadap core description atau petrophysical cutoffs</li>
+                    <li>Evaluasi seismic facies clustering dengan interpreted horizons atau well ties</li>
+                    <li>Benchmarking unsupervised methods terhadap supervised baselines</li>
+                    <li>Semi-supervised scenarios: partial labels dari few wells untuk validate clustering di area lain</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Determining Optimal K -->
+        <div class="section">
+            <h2 class="section-title">🎯 Menentukan Jumlah Cluster Optimal</h2>
+            
+            <h3 class="section-subtitle">1. Elbow Method</h3>
+            <div class="content-text">
+                <p>Plot inertia (WCSS) vs number of clusters. Optimal K berada di "elbow" - titik dimana penambahan cluster tidak signifikan menurunkan inertia.</p>
+                <p><strong>Pros:</strong> Simple, intuitive, computationally cheap</p>
+                <p><strong>Cons:</strong> Subjective (elbow tidak selalu jelas), hanya untuk K-Means, tidak ada statistical test</p>
+            </div>
+
+            <h3 class="section-subtitle">2. Silhouette Analysis</h3>
+            <div class="content-text">
+                <p>Plot silhouette score untuk berbagai nilai K. Pilih K dengan silhouette score tertinggi. Silhouette plot per-cluster juga useful untuk identify poorly-separated clusters.</p>
+                <p><strong>Pros:</strong> Quantitative, visual inspection of individual clusters, works for any distance-based algorithm</p>
+                <p><strong>Cons:</strong> Computational cost O(n²), assumes convex clusters</p>
+            </div>
+
+            <h3 class="section-subtitle">3. Gap Statistic</h3>
+            <div class="content-text">
+                <p>Membandingkan total within-cluster variation dengan expected value dari null reference distribution (uniform random data).</p>
+                <p><strong>Pros:</strong> Statistical justification, formal test, tidak bergantung pada visual inspection</p>
+                <p><strong>Cons:</strong> Computationally expensive (requires bootstrapping), sensitive to reference distribution choice</p>
+            </div>
+
+            <h3 class="section-subtitle">4. Domain Knowledge & Geological Context</h3>
+            <div class="info-box success">
+                <div class="info-box-title">✅ Best Practice untuk Geofisika</div>
+                <p>Kombinasikan statistical metrics dengan geological understanding:</p>
+                <ul>
+                    <li><strong>Well log clustering:</strong> Expected number of facies dari stratigraphic interpretation</li>
+                    <li><strong>Seismic facies:</strong> Number of seismic units dari sequence stratigraphy</li>
+                    <li><strong>Reservoir zonation:</strong> Flow units dari core analysis atau RFT data</li>
+                    <li><strong>Balance:</strong> Terlalu sedikit clusters → under-segmentation, terlalu banyak → noise/overfitting</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="section">
+            <h2 class="section-title">⚖️ Perbandingan Metrics</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Type</th>
+                        <th>Best Value</th>
+                        <th>Computational Cost</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Silhouette Score</strong></td>
+                        <td>Internal</td>
+                        <td>+1 (higher better)</td>
+                        <td>O(n²)</td>
+                        <td>General purpose, any distance-based clustering</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Davies-Bouldin</strong></td>
+                        <td>Internal</td>
+                        <td>0 (lower better)</td>
+                        <td>O(n·k)</td>
+                        <td>Fast, good for K-Means, convex clusters</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Calinski-Harabasz</strong></td>
+                        <td>Internal</td>
+                        <td>∞ (higher better)</td>
+                        <td>O(n·k)</td>
+                        <td>Fast, works well with K-Means</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inertia (WCSS)</strong></td>
+                        <td>Internal</td>
+                        <td>0 (lower better)</td>
+                        <td>O(n·k)</td>
+                        <td>K-Means only, use with Elbow Method</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gap Statistic</strong></td>
+                        <td>Internal</td>
+                        <td>Peak value</td>
+                        <td>O(B·n·k)</td>
+                        <td>Finding optimal K, statistical justification</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Adjusted Rand Index</strong></td>
+                        <td>External</td>
+                        <td>1 (higher better)</td>
+                        <td>O(n)</td>
+                        <td>When ground truth available, benchmarking</td>
+                    </tr>
+                    <tr>
+                        <td><strong>NMI</strong></td>
+                        <td>External</td>
+                        <td>1 (higher better)</td>
+                        <td>O(n·k)</td>
+                        <td>Information-theoretic, balanced measure</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Best Practices -->
+        <div class="section">
+            <h2 class="section-title">✨ Best Practices & Common Pitfalls</h2>
+            
+            <h3 class="section-subtitle">✅ Recommended Workflow</h3>
+            <div class="content-text">
+                <ol>
+                    <li><strong>Exploratory Analysis:</strong> Visualize data dengan PCA/t-SNE, understand inherent structure</li>
+                    <li><strong>Determine K Range:</strong> Use domain knowledge untuk set realistic K range (e.g., K=2 to 10)</li>
+                    <li><strong>Multiple Metrics:</strong> Compute Silhouette, Davies-Bouldin, Calinski-Harabasz untuk K range</li>
+                    <li><strong>Visual Inspection:</strong> Plot metrics, look for consensus (berbagai metrics agree pada K tertentu)</li>
+                    <li><strong>Stability Analysis:</strong> Run clustering multiple times dengan different initializations, check consistency</li>
+                    <li><strong>Geological Validation:</strong> Interpret clusters dalam konteks geologi, verify dengan domain expert</li>
+                    <li><strong>Cross-validation:</strong> Jika ada ground truth partial, use external metrics untuk validate</li>
+                </ol>
+            </div>
+
+            <h3 class="section-subtitle">⚠️ Common Pitfalls to Avoid</h3>
+            <div class="info-box warning">
+                <div class="info-box-title">Kesalahan Umum dalam Evaluasi Clustering</div>
+                <ul>
+                    <li><strong>Over-reliance on single metric:</strong> Berbeda metrics bisa contradict - use multiple!</li>
+                    <li><strong>Ignoring data characteristics:</strong> K-Means metrics assume spherical clusters - inappropriate untuk DBSCAN results</li>
+                    <li><strong>Not scaling features:</strong> Metrics sensitive to feature scales - always standardize!</li>
+                    <li><strong>Optimizing K to extreme:</strong> Very high K → overfitting to noise, very low K → under-segmentation</li>
+                    <li><strong>Forgetting domain context:</strong> Metrics hanya tools - geological interpretation is key!</li>
+                    <li><strong>Not checking stability:</strong> Single run bisa unstable - verify dengan multiple random seeds</li>
+                    <li><strong>Comparing different algorithms unfairly:</strong> Use same metrics, same preprocessing, same data splits</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Implementation Example -->
+        <div class="section">
+            <h2 class="section-title">💻 Implementation Example</h2>
+            
+            <div class="content-text">
+                <p>Contoh Python code untuk evaluate clustering menggunakan multiple metrics:</p>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-title">🐍 Code Snippet</div>
+                <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; overflow-x: auto; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; line-height: 1.6;">
+<span style="color: var(--accent-secondary);">from</span> sklearn.metrics <span style="color: var(--accent-secondary);">import</span> silhouette_score, davies_bouldin_score, calinski_harabasz_score
+<span style="color: var(--accent-secondary);">from</span> sklearn.cluster <span style="color: var(--accent-secondary);">import</span> KMeans
+<span style="color: var(--accent-secondary);">import</span> numpy <span style="color: var(--accent-secondary);">as</span> np
+
+<span style="color: var(--text-muted);"># Evaluate clustering untuk range K</span>
+results = []
+K_range = <span style="color: var(--accent-primary);">range</span>(<span style="color: #f59e0b;">2</span>, <span style="color: #f59e0b;">11</span>)
+
+<span style="color: var(--accent-secondary);">for</span> k <span style="color: var(--accent-secondary);">in</span> K_range:
+    kmeans = <span style="color: var(--accent-primary);">KMeans</span>(n_clusters=k, random_state=<span style="color: #f59e0b;">42</span>, n_init=<span style="color: #f59e0b;">10</span>)
+    labels = kmeans.<span style="color: var(--accent-primary);">fit_predict</span>(X_scaled)
+    
+    <span style="color: var(--text-muted);"># Compute metrics</span>
+    sil = <span style="color: var(--accent-primary);">silhouette_score</span>(X_scaled, labels)
+    db = <span style="color: var(--accent-primary);">davies_bouldin_score</span>(X_scaled, labels)
+    ch = <span style="color: var(--accent-primary);">calinski_harabasz_score</span>(X_scaled, labels)
+    inertia = kmeans.inertia_
+    
+    results.<span style="color: var(--accent-primary);">append</span>({
+        <span style="color: #10b981;">'K'</span>: k,
+        <span style="color: #10b981;">'Silhouette'</span>: sil,
+        <span style="color: #10b981;">'Davies-Bouldin'</span>: db,
+        <span style="color: #10b981;">'Calinski-Harabasz'</span>: ch,
+        <span style="color: #10b981;">'Inertia'</span>: inertia
+    })
+    
+    <span style="color: var(--accent-primary);">print</span>(<span style="color: #10b981;">f"K=<span style="color: var(--warning);">{k}</span>: Sil=<span style="color: var(--warning);">{sil:.3f}</span>, DB=<span style="color: var(--warning);">{db:.3f}</span>, CH=<span style="color: var(--warning);">{ch:.1f}</span>"</span>)
+
+<span style="color: var(--text-muted);"># Find optimal K based on consensus</span>
+<span style="color: var(--text-muted);"># Higher Silhouette, Lower DB, Higher CH</span>
+                </pre>
+            </div>
+
+            <div class="content-text">
+                <p><strong>Expected Output:</strong></p>
+                <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-muted);">
+                    K=2: Sil=0.587, DB=0.842, CH=1024.3<br>
+                    K=3: Sil=0.631, DB=0.735, CH=1189.7<br>
+                    <strong style="color: var(--success);">K=4: Sil=0.624, DB=0.698, CH=1256.4 ← Optimal!</strong><br>
+                    K=5: Sil=0.603, DB=0.742, CH=1198.2<br>
+                    ...
+                </p>
+            </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="section">
+            <h2 class="section-title">📖 Referensi & Resources</h2>
+            <div class="content-text">
+                <p><strong>Papers & Books:</strong></p>
+                <ul>
+                    <li>Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation of cluster analysis</li>
+                    <li>Davies, D. L., & Bouldin, D. W. (1979). A Cluster Separation Measure</li>
+                    <li>Caliński, T., & Harabasz, J. (1974). A dendrite method for cluster analysis</li>
+                    <li>Hubert, L., & Arabie, P. (1985). Comparing partitions (ARI paper)</li>
+                </ul>
+                
+                <p><strong>Documentation:</strong></p>
+                <ul>
+                    <li><a href="https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation" target="_blank" style="color: var(--accent-primary);">Scikit-learn: Clustering Performance Evaluation</a></li>
+                    <li><a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html" target="_blank" style="color: var(--accent-primary);">Silhouette Analysis Example</a></li>
+                </ul>
+
+                <p><strong>Practice:</strong></p>
+                <ul>
+                    <li>🔬 <a href="praktikum-03.html" style="color: var(--accent-primary);">Praktikum 03: Clustering dengan Validation Metrics</a></li>
+                    <li>📊 Apply multiple metrics pada South Barrow 18 well data</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Assessment -->
+        <div class="section">
+            <h2 class="section-title">📝 Evaluasi</h2>
+            <div class="content-text">
+                <p><strong>Tugas:</strong></p>
+                <ol>
+                    <li>Implement Praktikum 03 dengan menambahkan ALL validation metrics (Silhouette, DB, CH, Gap Statistic)</li>
+                    <li>Plot metrics vs K dan tentukan optimal K berdasarkan consensus</li>
+                    <li>Compare K-Means, Hierarchical, dan DBSCAN pada same dataset dengan same metrics</li>
+                    <li>Interpret hasil dalam konteks geological facies</li>
+                    <li>Write report: methodology, results, interpretation, limitations</li>
+                </ol>
+
+                <p><strong>Penilaian:</strong></p>
+                <ul>
+                    <li>Implementation correctness (30%)</li>
+                    <li>Proper use of multiple metrics (25%)</li>
+                    <li>Analysis & interpretation (25%)</li>
+                    <li>Geological validation (20%)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-nav">
+            <a href="pertemuan-09.html" class="footer-link">
+                <span>←</span>
+                <span>Previous: Pertemuan 09 - Unsupervised Learning</span>
+            </a>
+            <a href="pertemuan-11.html" class="footer-link">
+                <span>Next: Pertemuan 11</span>
+                <span>→</span>
+            </a>
+        </div>
+        <div class="footer-text">
+            © 2025 Machine Learning dalam Geofisika - Institut Teknologi Sumatera
+        </div>
+    </footer>
+</body>
+</html>
