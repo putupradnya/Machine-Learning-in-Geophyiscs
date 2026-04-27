@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Integrasi: Trapezoidal & Simpson</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --bg: #F3F4F6;
+            --panel: #FFFFFF;
+            --text: #1F2937;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #6B7280;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .control-panel {
+            background: var(--panel);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 300px;
+        }
+        .visualization-panel {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            flex: 2;
+            min-width: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #4338CA;
+        }
+        .results {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #EEF2FF;
+            border-left: 4px solid var(--primary);
+            border-radius: 4px;
+        }
+        .results p {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+        .results span {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        #plot {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Integrasi Numerik Tingkat Lanjut</h1>
+    <p class="subtitle">Metode Trapesium, Simpson 1/3, dan Simpson 3/8</p>
+
+    <div class="container">
+        <div class="control-panel">
+            <div class="form-group">
+                <label for="functionInput">Fungsi f(x):</label>
+                <input type="text" id="functionInput" value="sin(x) + 2" placeholder="contoh: sin(x) + 2">
+                <small style="color: #6B7280;">Gunakan x sebagai variabel</small>
+            </div>
+            <div class="form-group">
+                <label for="aInput">Batas Bawah (a):</label>
+                <input type="number" id="aInput" value="0" step="any">
+            </div>
+            <div class="form-group">
+                <label for="bInput">Batas Atas (b):</label>
+                <input type="number" id="bInput" value="6" step="any">
+            </div>
+            <div class="form-group">
+                <label for="nInput">Jumlah Partisi / Interval (n):</label>
+                <input type="number" id="nInput" value="6" min="1" max="500">
+            </div>
+            <div class="form-group">
+                <label for="methodSelect">Metode:</label>
+                <select id="methodSelect">
+                    <option value="trapezoid">Metode Trapesium</option>
+                    <option value="simpson13">Metode Simpson 1/3</option>
+                    <option value="simpson38">Metode Simpson 3/8</option>
+                </select>
+            </div>
+            <button onclick="calculateAndPlot()">Hitung & Visualisasikan</button>
+
+            <div class="results" id="resultsBox" style="display: none;">
+                <p>Lebar partisi (h): <span id="resDx">0</span></p>
+                <p>Estimasi Area: <span id="resArea">0</span></p>
+            </div>
+        </div>
+
+        <div class="visualization-panel">
+            <div id="plot"></div>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk menghitung interpolasi polinomial Lagrange (untuk visualisasi kurva lengkung Simpson)
+        function lagrangeInterpolate(xTarget, xPoints, yPoints) {
+            let result = 0;
+            for (let i = 0; i < xPoints.length; i++) {
+                let term = yPoints[i];
+                for (let j = 0; j < xPoints.length; j++) {
+                    if (j !== i) {
+                        term = term * (xTarget - xPoints[j]) / (xPoints[i] - xPoints[j]);
+                    }
+                }
+                result += term;
+            }
+            return result;
+        }
+
+        function calculateAndPlot() {
+            const funcStr = document.getElementById('functionInput').value;
+            const a = parseFloat(document.getElementById('aInput').value);
+            const b = parseFloat(document.getElementById('bInput').value);
+            const n = parseInt(document.getElementById('nInput').value);
+            const method = document.getElementById('methodSelect').value;
+
+            // Validasi Input
+            if (a >= b) {
+                alert("Batas atas (b) harus lebih besar dari batas bawah (a)."); return;
+            }
+            if (n < 1) {
+                alert("Jumlah partisi (n) minimal 1."); return;
+            }
+            if (method === 'simpson13' && n % 2 !== 0) {
+                alert("Syarat: Untuk Metode Simpson 1/3, jumlah partisi (n) HARUS genap."); return;
+            }
+            if (method === 'simpson38' && n % 3 !== 0) {
+                alert("Syarat: Untuk Metode Simpson 3/8, jumlah partisi (n) HARUS kelipatan 3."); return;
+            }
+
+            let compiledFunc;
+            try {
+                compiledFunc = math.compile(funcStr);
+            } catch (error) {
+                alert("Format fungsi salah. Pastikan menggunakan sintaks matematika yang benar."); return;
+            }
+
+            const f = (x) => compiledFunc.evaluate({ x: x });
+            const h = (b - a) / n;
+            let area = 0;
+            let methodTraces = []; // Akan menyimpan area arsiran dari masing-masing metode
+
+            // ==========================================
+            // LOGIKA PERHITUNGAN & GENERATE ARSIRAN AREA
+            // ==========================================
+
+            if (method === 'trapezoid') {
+                // Rumus Trapesium
+                area = f(a) + f(b);
+                for (let i = 1; i < n; i++) {
+                    area += 2 * f(a + i * h);
+                }
+                area = area * h / 2;
+
+                // Visualisasi Trapesium (Garis Lurus per 2 titik)
+                for (let i = 0; i < n; i++) {
+                    let x0 = a + i * h, x1 = a + (i + 1) * h;
+                    let y0 = f(x0), y1 = f(x1);
+                    methodTraces.push({
+                        x: [x0, x1], y: [y0, y1],
+                        fill: 'tozeroy', mode: 'lines',
+                        line: { color: '#10B981', width: 2 },
+                        fillcolor: 'rgba(16, 185, 129, 0.4)',
+                        name: `Partisi ${i+1}`
+                    });
+                    // Garis pemisah vertikal
+                    methodTraces.push({ x: [x1, x1], y: [0, y1], mode: 'lines', line: {color: 'rgba(0,0,0,0.1)', width: 1}, showlegend: false, hoverinfo: 'skip' });
+                }
+
+            } else if (method === 'simpson13') {
+                // Rumus Simpson 1/3
+                area = f(a) + f(b);
+                for (let i = 1; i < n; i++) {
+                    if (i % 2 !== 0) area += 4 * f(a + i * h); // Index ganjil dikali 4
+                    else area += 2 * f(a + i * h);             // Index genap dikali 2
+                }
+                area = area * h / 3;
+
+                // Visualisasi Simpson 1/3 (Kurva Parabola per 3 titik)
+                for (let i = 0; i < n; i += 2) {
+                    let X_pts = [a + i*h, a + (i+1)*h, a + (i+2)*h];
+                    let Y_pts = [f(X_pts[0]), f(X_pts[1]), f(X_pts[2])];
+                    let plotX = [], plotY = [];
+                    // Generate 20 titik di antara interval untuk membuat kurva parabolanya terlihat melengkung
+                    for(let step = 0; step <= 20; step++) {
+                        let px = X_pts[0] + (step/20) * (X_pts[2] - X_pts[0]);
+                        plotX.push(px);
+                        plotY.push(lagrangeInterpolate(px, X_pts, Y_pts));
+                    }
+                    methodTraces.push({
+                        x: plotX, y: plotY,
+                        fill: 'tozeroy', mode: 'lines',
+                        line: { color: '#F59E0B', width: 2 },
+                        fillcolor: 'rgba(245, 158, 11, 0.4)',
+                        name: `Blok ${i/2 + 1}`
+                    });
+                    // Garis pemisah vertikal
+                    methodTraces.push({ x: [X_pts[2], X_pts[2]], y: [0, Y_pts[2]], mode: 'lines', line: {color: 'rgba(0,0,0,0.1)', width: 1}, showlegend: false, hoverinfo: 'skip' });
+                }
+
+            } else if (method === 'simpson38') {
+                // Rumus Simpson 3/8
+                area = f(a) + f(b);
+                for (let i = 1; i < n; i++) {
+                    if (i % 3 === 0) area += 2 * f(a + i * h); // Kelipatan 3 dikali 2
+                    else area += 3 * f(a + i * h);             // Selain kelipatan 3 dikali 3
+                }
+                area = area * (3 * h) / 8;
+
+                // Visualisasi Simpson 3/8 (Kurva Polinomial Kubik per 4 titik)
+                for (let i = 0; i < n; i += 3) {
+                    let X_pts = [a + i*h, a + (i+1)*h, a + (i+2)*h, a + (i+3)*h];
+                    let Y_pts = [f(X_pts[0]), f(X_pts[1]), f(X_pts[2]), f(X_pts[3])];
+                    let plotX = [], plotY = [];
+                    // Generate 30 titik untuk kurva mulus polinomial derajat 3
+                    for(let step = 0; step <= 30; step++) {
+                        let px = X_pts[0] + (step/30) * (X_pts[3] - X_pts[0]);
+                        plotX.push(px);
+                        plotY.push(lagrangeInterpolate(px, X_pts, Y_pts));
+                    }
+                    methodTraces.push({
+                        x: plotX, y: plotY,
+                        fill: 'tozeroy', mode: 'lines',
+                        line: { color: '#8B5CF6', width: 2 },
+                        fillcolor: 'rgba(139, 92, 246, 0.4)',
+                        name: `Blok ${i/3 + 1}`
+                    });
+                    // Garis pemisah vertikal
+                    methodTraces.push({ x: [X_pts[3], X_pts[3]], y: [0, Y_pts[3]], mode: 'lines', line: {color: 'rgba(0,0,0,0.1)', width: 1}, showlegend: false, hoverinfo: 'skip' });
+                }
+            }
+
+            // Tampilkan hasil
+            document.getElementById('resultsBox').style.display = 'block';
+            document.getElementById('resDx').innerText = h.toFixed(5);
+            document.getElementById('resArea').innerText = area.toFixed(6);
+
+            // ==========================================
+            // MENGGAMBAR KURVA ASLI & MERENDER GRAFIK
+            // ==========================================
+            
+            let xCurve = [], yCurve = [];
+            let plotA = a - (b-a)*0.05, plotB = b + (b-a)*0.05; // Margin agar grafik tidak mentok
+            let plotStep = (plotB - plotA) / 200;
+
+            for (let x = plotA; x <= plotB; x += plotStep) {
+                xCurve.push(x);
+                yCurve.push(f(x));
+            }
+
+            // Trace kurva f(x) asli
+            const traceCurve = {
+                x: xCurve, y: yCurve,
+                mode: 'lines',
+                name: 'Fungsi Asli f(x)',
+                line: { color: '#1F2937', width: 3 }
+            };
+
+            // Gabungkan semua trace (arsiran estimasi + kurva asli)
+            const plotData = [...methodTraces, traceCurve];
+
+            let titleName = method === 'trapezoid' ? "Metode Trapesium" : 
+                            method === 'simpson13' ? "Metode Simpson 1/3" : "Metode Simpson 3/8";
+
+            const layout = {
+                title: 'Visualisasi: ' + titleName,
+                xaxis: { title: 'Sumbu X', zeroline: true },
+                yaxis: { title: 'Sumbu Y', zeroline: true },
+                hovermode: 'closest',
+                showlegend: false // Disembunyikan agar legend tidak menumpuk karena banyak trace partisi
+            };
+
+            Plotly.newPlot('plot', plotData, layout, {responsive: true});
+        }
+
+        // Render otomatis saat halaman pertama dimuat
+        window.onload = calculateAndPlot;
+    </script>
+</body>
+</html>
