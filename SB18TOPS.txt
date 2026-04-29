@@ -1,0 +1,27 @@
+
+Dept. of the Interior
+U.S. Geological Survey
+Energy Resources Team
+
+Selected Data from Fourteen Wildcat Wells in 
+the National Petroleum Reserve in Alaska
+
+USGS Open File Report 00-200 
+
+
+Wildcat Well South Barrow 18 - Depths to Selected Stratigraphic Horizons
+
+WELL NAME         ROCK UNIT                                   DEPTH, FEET
+SOUTH BARROW 18   Surficial Deposits and/or Gubik Formation      18.00                 
+SOUTH BARROW 18   Torok Formation                                75.00                 
+SOUTH BARROW 18   Pebble Shale Unit                            1375.00               
+SOUTH BARROW 18   Kingak Shale                                 1760.00               
+
+Data Source
+Table 15.3. - Total depth and depths to selected stratigraphic horizons
+for Government-drilled wells on the North Slope of Alaska., 
+in:
+
+Gryc, George, Ed., 1988, Geology and exploration of the National Petroleum
+     Reserve in Alaska, 1974 to 1982, U.S. Geological Survey Professional 
+     Paper 1399, Pgs. 322 - 324.
