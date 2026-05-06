@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 12: Pengantar Deep Learning - Machine Learning dalam Geofisika</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #151922;
+            --bg-tertiary: #1e2530;
+            --accent-cyan: #00d9ff;
+            --accent-purple: #7c3aed;
+            --text-primary: #e8edf4;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --border: #2d3748;
+            --success: #10b981;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Serif', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-bottom: 1px solid var(--border);
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .header .meta {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+        
+        .nav {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav a {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .nav a:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .objectives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .objective-item {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-cyan);
+        }
+        
+        .objective-item::before {
+            content: "▹";
+            color: var(--accent-cyan);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .slides-container {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .slides-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        
+        .slides-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .slides-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .slides-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .slides-link:hover {
+            color: var(--accent-purple);
+            transform: translateX(4px);
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .content-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .content-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.1);
+        }
+        
+        .content-card h3 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.3rem;
+            color: var(--accent-purple);
+            margin-bottom: 1rem;
+        }
+        
+        .content-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .content-card li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        
+        .content-card li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .info-box {
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        
+        .info-box.info {
+            background: rgba(0, 217, 255, 0.1);
+            border-left-color: var(--accent-cyan);
+        }
+        
+        .info-box.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-left-color: var(--success);
+        }
+        
+        .info-box strong {
+            color: var(--text-primary);
+        }
+        
+        .info-box p {
+            margin: 0.5rem 0;
+            color: var(--text-secondary);
+        }
+        
+        .references {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .references h4 {
+            font-family: 'Manrope', sans-serif;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+        }
+        
+        .references ol {
+            color: var(--text-secondary);
+            padding-left: 1.5rem;
+        }
+        
+        .references li {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        
+        .footer p {
+            margin: 0.5rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🧠 Pertemuan 12: Pengantar Deep Learning</h1>
+            <p class="subtitle">Fundamental Concepts of Neural Networks and Deep Learning</p>
+            <p class="meta">Machine Learning dalam Geofisika | Institut Teknologi Sumatera</p>
+            
+            <nav class="nav">
+                <a href="../index.html">← Beranda</a>
+                <a href="pertemuan-11.html">Pertemuan 11</a>
+                <a href="pertemuan-12.html">Pertemuan 12</a>
+                <a href="pertemuan-13.html">Pertemuan 13</a>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Tujuan Pembelajaran -->
+        <div class="section">
+            <h2 class="section-title">🎯 Tujuan Pembelajaran</h2>
+            <div class="objectives-grid">
+                <div class="objective-item">Memahami konsep fundamental neural networks dan deep learning</div>
+                <div class="objective-item">Mengerti arsitektur dan komponen dasar artificial neural networks (ANN)</div>
+                <div class="objective-item">Memahami forward propagation dan backpropagation</div>
+                <div class="objective-item">Mengenal activation functions dan perannya dalam neural networks</div>
+                <div class="objective-item">Memahami loss functions dan optimization algorithms</div>
+                <div class="objective-item">Mengenal berbagai arsitektur deep learning (CNN, RNN, Transformer)</div>
+            </div>
+        </div>
+        
+        <!-- Embedded Presentation -->
+        <div class="section">
+            <h2 class="section-title">📊 Materi Presentasi</h2>
+            
+            <div class="slides-container">
+                <div class="slides-wrapper">
+                    <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQUwmA47WLB64EpwOckgHIGxMkZSt4bUJR5J2gnMHQ7ZbEgZpnE8INPq4bnoXZnQQ/embed?start=false&loop=false&delayms=3000" 
+                            allowfullscreen="true" 
+                            mozallowfullscreen="true" 
+                            webkitallowfullscreen="true">
+                    </iframe>
+                </div>
+                
+                <div class="slides-info">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">
+                        💡 Gunakan tombol panah atau klik untuk navigasi slide
+                    </span>
+                    <a href="https://docs.google.com/presentation/d/e/2PACX-1vQUwmA47WLB64EpwOckgHIGxMkZSt4bUJR5J2gnMHQ7ZbEgZpnE8INPq4bnoXZnQQ/pub?start=false&loop=false&delayms=3000" 
+                       target="_blank" 
+                       class="slides-link">
+                        Buka di Tab Baru →
+                    </a>
+                </div>
+            </div>
+            
+            <div class="info-box info">
+                <p><strong>📝 Catatan:</strong> Presentasi ini mencakup materi fundamental deep learning mulai dari konsep dasar neural networks hingga arsitektur modern seperti CNN, RNN, dan Transformers. Pastikan memahami setiap konsep sebelum melanjutkan ke materi praktikum.</p>
+            </div>
+        </div>
+        
+        <!-- Outline Materi -->
+        <div class="section">
+            <h2 class="section-title">📚 Outline Materi</h2>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>1. Pendahuluan</h3>
+                    <ul>
+                        <li>Motivasi dan latar belakang deep learning</li>
+                        <li>Sejarah perkembangan neural networks</li>
+                        <li>Biological inspiration: dari neuron biologis ke artificial neuron</li>
+                        <li>Artificial neuron dan perceptron</li>
+                        <li>Kapan menggunakan deep learning vs traditional ML</li>
+                        <li>Aplikasi deep learning di berbagai domain</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>2. Review Machine Learning vs Deep Learning</h3>
+                    <ul>
+                        <li>Perbedaan fundamental ML klasik dan deep learning</li>
+                        <li>Feature engineering vs feature learning</li>
+                        <li>Shallow learning vs deep learning</li>
+                        <li>Kapabilitas representasi dan abstraksi</li>
+                        <li>Trade-off: data requirements, interpretability, computational cost</li>
+                        <li>Kelebihan dan keterbatasan masing-masing approach</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>3. Arsitektur Deep Learning</h3>
+                    <ul>
+                        <li>Komponen dasar: layers, neurons, weights, biases</li>
+                        <li>Feedforward Neural Networks (FNN/MLP)</li>
+                        <li>Convolutional Neural Networks (CNN) untuk data spasial</li>
+                        <li>Recurrent Neural Networks (RNN/LSTM/GRU) untuk data sequential</li>
+                        <li>Autoencoders untuk dimensionality reduction</li>
+                        <li>Transformers dan attention mechanism</li>
+                        <li>Activation functions, loss functions, optimizers</li>
+                        <li>Forward propagation dan backpropagation</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>4. Studi Kasus</h3>
+                    <ul>
+                        <li>Seismic facies classification dengan CNN</li>
+                        <li>Well log analysis dan lithology prediction</li>
+                        <li>Time series prediction: earthquake forecasting dengan RNN/LSTM</li>
+                        <li>GPR data interpretation dengan deep learning</li>
+                        <li>Seismic inversion menggunakan neural networks</li>
+                        <li>Transfer learning untuk geophysical applications</li>
+                        <li>Implementasi praktis dengan TensorFlow/Keras dan PyTorch</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Concepts -->
+        <div class="section">
+            <h2 class="section-title">🔑 Konsep Kunci</h2>
+            
+            <div class="info-box success">
+                <p><strong>1. Universal Approximation Theorem</strong></p>
+                <p>Neural network dengan single hidden layer dapat mengaproksimasi sembarang continuous function dengan arbitrary accuracy, asalkan memiliki neuron yang cukup banyak.</p>
+            </div>
+            
+            <div class="info-box success">
+                <p><strong>2. Backpropagation</strong></p>
+                <p>Algoritma efisien untuk menghitung gradients dalam neural networks menggunakan chain rule. Memungkinkan training networks dengan banyak layers (deep networks).</p>
+            </div>
+            
+            <div class="info-box success">
+                <p><strong>3. Gradient Descent Variants</strong></p>
+                <p>Batch GD (entire dataset), Stochastic GD (single sample), Mini-batch GD (subset). Trade-off antara accuracy dan computational efficiency.</p>
+            </div>
+            
+            <div class="info-box success">
+                <p><strong>4. Vanishing/Exploding Gradients</strong></p>
+                <p>Gradients menjadi terlalu kecil (vanishing) atau terlalu besar (exploding) saat backprop melalui banyak layers. Diatasi dengan: proper initialization, batch normalization, ReLU activation, residual connections.</p>
+            </div>
+            
+            <div class="info-box success">
+                <p><strong>5. Overfitting Prevention</strong></p>
+                <p>Neural networks prone to overfitting karena high capacity. Strategi: regularization (L1/L2), dropout, early stopping, data augmentation, batch normalization.</p>
+            </div>
+        </div>
+        
+        <!-- Aplikasi Geofisika -->
+        <div class="section">
+            <h2 class="section-title">🌍 Aplikasi dalam Geofisika</h2>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Seismic Interpretation</h3>
+                    <ul>
+                        <li>CNN untuk automatic fault detection</li>
+                        <li>Semantic segmentation untuk facies classification</li>
+                        <li>Seismic attribute analysis</li>
+                        <li>First break picking</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>Well Log Analysis</h3>
+                    <ul>
+                        <li>Lithology classification dari multi-well logs</li>
+                        <li>Petrophysical property prediction</li>
+                        <li>Missing log reconstruction</li>
+                        <li>Formation evaluation automation</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>Geophysical Inversion</h3>
+                    <ul>
+                        <li>Neural network sebagai forward model</li>
+                        <li>Inverse problem solving dengan DL</li>
+                        <li>Uncertainty quantification</li>
+                        <li>Physics-informed neural networks (PINN)</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>Time Series Prediction</h3>
+                    <ul>
+                        <li>RNN/LSTM untuk earthquake prediction</li>
+                        <li>Volcanic activity forecasting</li>
+                        <li>Ground deformation monitoring</li>
+                        <li>Reservoir production forecasting</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Referensi -->
+        <div class="section">
+            <h2 class="section-title">📖 Referensi dan Sumber Belajar</h2>
+            
+            <div class="references">
+                <h4>Buku dan Tutorial</h4>
+                <ol>
+                    <li>Goodfellow, I., Bengio, Y., & Courville, A. (2016). <em>Deep Learning</em>. MIT Press. [deeplearningbook.org]</li>
+                    <li>Nielsen, M. (2015). <em>Neural Networks and Deep Learning</em>. [neuralnetworksanddeeplearning.com]</li>
+                    <li>Chollet, F. (2021). <em>Deep Learning with Python</em> (2nd ed.). Manning Publications.</li>
+                    <li>Zhang, A., Lipton, Z. C., Li, M., & Smola, A. J. (2021). <em>Dive into Deep Learning</em>. [d2l.ai]</li>
+                </ol>
+            </div>
+            
+            <div class="references">
+                <h4>Online Courses</h4>
+                <ol>
+                    <li>Andrew Ng - Deep Learning Specialization (Coursera)</li>
+                    <li>Fast.ai - Practical Deep Learning for Coders</li>
+                    <li>MIT 6.S191 - Introduction to Deep Learning</li>
+                    <li>Stanford CS230 - Deep Learning</li>
+                </ol>
+            </div>
+            
+            <div class="references">
+                <h4>Geophysics-Specific</h4>
+                <ol>
+                    <li>Dramsch, J. S. (2020). "70 years of machine learning in geoscience in review." <em>Advances in Geophysics</em>, 61, 1-55.</li>
+                    <li>Bergen, K. J., et al. (2019). "Machine learning for data-driven discovery in solid Earth geoscience." <em>Science</em>, 363(6433).</li>
+                    <li>Mosser, L., et al. (2020). "Deep learning for subsurface characterization." <em>The Leading Edge</em>, 39(8), 580-596.</li>
+                </ol>
+            </div>
+            
+            <div class="info-box info">
+                <p><strong>💻 Framework Documentation:</strong></p>
+                <p>• TensorFlow/Keras: <a href="https://tensorflow.org" style="color: var(--accent-cyan);">tensorflow.org</a></p>
+                <p>• PyTorch: <a href="https://pytorch.org" style="color: var(--accent-cyan);">pytorch.org</a></p>
+                <p>• Scikit-learn (Neural Networks): <a href="https://scikit-learn.org/stable/modules/neural_networks_supervised.html" style="color: var(--accent-cyan);">scikit-learn.org</a></p>
+            </div>
+        </div>
+        
+        <!-- Next Steps -->
+        <div class="section">
+            <h2 class="section-title">🚀 Langkah Selanjutnya</h2>
+            
+            <div class="info-box success">
+                <p><strong>Setelah mempelajari materi ini, Anda diharapkan:</strong></p>
+                <p>✓ Memahami fundamental concepts neural networks dan deep learning</p>
+                <p>✓ Mengerti arsitektur dan training process neural networks</p>
+                <p>✓ Mampu memilih activation functions, loss functions, dan optimizers yang tepat</p>
+                <p>✓ Siap untuk implementasi praktis di Praktikum berikutnya</p>
+                <p>✓ Memahami aplikasi deep learning dalam konteks geofisika</p>
+            </div>
+            
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="praktikum-04.html" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-cyan); color: var(--bg-primary); text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-family: 'Manrope', sans-serif; font-weight: 700; transition: all 0.3s;">
+                    Lanjut ke Praktikum 04 →
+                </a>
+                
+                <a href="pertemuan-13.html" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bg-tertiary); color: var(--accent-cyan); text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid var(--accent-cyan); font-family: 'Manrope', sans-serif; font-weight: 600; transition: all 0.3s;">
+                    Pertemuan 13 →
+                </a>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div class="footer">
+        <p><strong>Machine Learning dalam Geofisika</strong></p>
+        <p>Pertemuan 12: Pengantar Deep Learning</p>
+        <p style="margin-top: 1rem; color: var(--text-muted);">
+            Institut Teknologi Sumatera | Teknik Geofisika | 2025
+        </p>
+    </div>
+</body>
+</html>
