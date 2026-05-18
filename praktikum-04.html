@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum 04: Computer Vision dengan Roboflow - GPR Hyperbola Detection</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #151922;
+            --bg-tertiary: #1e2530;
+            --bg-code: #0d1117;
+            --accent-cyan: #00d9ff;
+            --accent-purple: #7c3aed;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --text-primary: #e8edf4;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --border: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'IBM Plex Serif', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-bottom: 1px solid var(--border);
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+        }
+        
+        .header .meta {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+        
+        .nav {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav a {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .nav a:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .subsection-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--accent-purple);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-green);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .step-number {
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .objectives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .objective-item {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-cyan);
+        }
+        
+        .objective-item::before {
+            content: "✓";
+            color: var(--accent-cyan);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .info-box {
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        
+        .info-box.info {
+            background: rgba(0, 217, 255, 0.1);
+            border-left-color: var(--accent-cyan);
+        }
+        
+        .info-box.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-left-color: var(--success);
+        }
+        
+        .info-box.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+        
+        .info-box strong {
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-box p {
+            color: var(--text-secondary);
+            margin: 0.5rem 0;
+        }
+        
+        .info-box ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .info-box li {
+            color: var(--text-secondary);
+            margin: 0.3rem 0;
+        }
+        
+        .screenshot-placeholder {
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            transition: all 0.3s;
+        }
+        
+        .screenshot-placeholder:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 217, 255, 0.05);
+        }
+        
+        .screenshot-placeholder .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .screenshot-placeholder .title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .screenshot-placeholder .desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .screenshot-img {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .step-list {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .step-list ol {
+            padding-left: 1.5rem;
+        }
+        
+        .step-list li {
+            color: var(--text-secondary);
+            margin: 0.8rem 0;
+            line-height: 1.6;
+        }
+        
+        .step-list li strong {
+            color: var(--text-primary);
+        }
+        
+        .step-list li code {
+            background: var(--bg-code);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+        }
+        
+        .decision-box {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0, 217, 255, 0.1));
+            border: 1px solid var(--accent-purple);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .decision-box .title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            color: var(--accent-purple);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .decision-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .option-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .option-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        
+        .option-card .option-title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+        
+        .option-card .option-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .option-card .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .badge.recommended {
+            background: var(--success);
+            color: var(--bg-primary);
+        }
+        
+        .badge.fastest {
+            background: var(--accent-orange);
+            color: var(--bg-primary);
+        }
+        
+        .badge.accurate {
+            background: var(--accent-purple);
+            color: white;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .metric-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .metric-card .value {
+            font-family: 'Manrope', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-card .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        thead {
+            background: var(--bg-code);
+        }
+        
+        th {
+            padding: 1rem;
+            text-align: left;
+            color: var(--accent-cyan);
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        
+        tbody tr:hover {
+            background: rgba(0, 217, 255, 0.05);
+        }
+        
+        .checklist {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 0.5rem;
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            margin-top: 0.3rem;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .checklist-item label {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8rem; }
+            .container { padding: 1rem; }
+            .decision-options { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Praktikum 04: Computer Vision dengan Roboflow</h1>
+            <p class="subtitle">GPR Hyperbola Detection - No-Code Object Detection Workflow</p>
+            <p class="meta">Studi Kasus: Ground Penetrating Radar Object Detection</p>
+            
+            <a href="index.html" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bg-tertiary); color: var(--text-secondary); text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid var(--border); font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 0.9rem; margin-top: 1.5rem; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--accent-cyan)';this.style.color='var(--accent-cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
+                ← Kembali ke Beranda
+            </a>
+
+            <nav class="nav">
+                <a href="praktikum-03.html">Praktikum 03</a>
+                <a href="praktikum-04.html">Praktikum 04</a>
+                <a href="praktikum-05.html">Praktikum 05 →</a>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Tujuan Pembelajaran -->
+        <div class="section">
+            <h2 class="section-title">Tujuan Pembelajaran</h2>
+            <div class="objectives-grid">
+                <div class="objective-item">Memahami konsep dasar computer vision dan object detection</div>
+                <div class="objective-item">Mengenal Ground Penetrating Radar (GPR) dan hyperbola detection</div>
+                <div class="objective-item">Menggunakan Roboflow platform untuk no-code computer vision</div>
+                <div class="objective-item">Melakukan data preprocessing dan augmentation</div>
+                <div class="objective-item">Melatih model YOLO untuk object detection</div>
+                <div class="objective-item">Mengevaluasi performa model dan melakukan inference</div>
+                <div class="objective-item">Menginterpretasi hasil deteksi dalam konteks geofisika</div>
+            </div>
+        </div>
+        
+        <!-- Pendahuluan -->
+        <div class="section">
+            <h2 class="section-title">📚 Pendahuluan</h2>
+            
+            <h3 class="subsection-title">Apa itu Computer Vision & Object Detection?</h3>
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                <strong style="color: var(--text-primary);">Computer Vision</strong> adalah cabang artificial intelligence yang memungkinkan komputer untuk "melihat" dan memahami konten visual seperti gambar dan video. <strong style="color: var(--text-primary);">Object Detection</strong> adalah task spesifik dalam computer vision yang bertujuan untuk:
+            </p>
+            
+            <div class="info-box info">
+                <strong>Object Detection Tasks:</strong>
+                <p>1. <strong>Localization</strong>: Menemukan posisi objek dalam gambar (bounding box)</p>
+                <p>2. <strong>Classification</strong>: Mengidentifikasi jenis/kelas objek</p>
+                <p>3. <strong>Confidence</strong>: Memberikan skor kepercayaan untuk setiap deteksi</p>
+            </div>
+            
+            <h3 class="subsection-title">Ground Penetrating Radar (GPR)</h3>
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                GPR adalah metode geofisika non-invasif yang menggunakan gelombang elektromagnetik untuk mencitrakan struktur bawah permukaan. Prinsip kerjanya:
+            </p>
+            
+            <div class="step-list">
+                <ol>
+                    <li><strong>Transmisi</strong>: Antena transmitter memancarkan pulsa radar ke dalam tanah</li>
+                    <li><strong>Refleksi</strong>: Sinyal dipantulkan oleh objek/interface dengan kontras dielektrik</li>
+                    <li><strong>Penerimaan</strong>: Antena receiver menangkap sinyal reflected</li>
+                    <li><strong>Imaging</strong>: Data ditampilkan sebagai radargram (x: posisi, y: kedalaman/waktu)</li>
+                </ol>
+            </div>
+            
+            <h3 class="subsection-title">GPR Hyperbola: Signifikansi Geofisika</h3>
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                Ketika GPR melewati objek buried (pipa, kabel, rongga, batuan), reflected signal membentuk pola <strong style="color: var(--accent-cyan);">hyperbola</strong> pada radargram. Karakteristik hyperbola mengandung informasi penting:
+            </p>
+            
+            <div class="info-box success">
+                <strong>Informasi dari Hyperbola:</strong>
+                <ul>
+                    <li><strong>Apex (puncak)</strong> → Posisi horizontal dan kedalaman objek</li>
+                    <li><strong>Curvature (kelengkungan)</strong> → Kecepatan propagasi gelombang dalam medium</li>
+                    <li><strong>Width (lebar)</strong> → Ukuran dan sifat objek</li>
+                    <li><strong>Amplitude (intensitas)</strong> → Kontras material properties</li>
+                </ul>
+            </div>
+            
+            <h3 class="subsection-title">Kenapa Deep Learning untuk GPR?</h3>
+            <div class="info-box warning">
+                <strong>Challenges Manual Interpretation:</strong>
+                <p>✗ Time-consuming untuk dataset besar (ratusan/ribuan profile)</p>
+                <p>✗ Subjektif - hasil bervariasi antar interpreter</p>
+                <p>✗ Sulit membedakan hyperbola dari noise/artifacts</p>
+                <p>✗ Tidak scalable untuk real-time monitoring</p>
+            </div>
+            
+            <div class="info-box success">
+                <strong>Keuntungan Deep Learning:</strong>
+                <p>✓ Deteksi otomatis dan konsisten</p>
+                <p>✓ Cepat - ribuan images dalam hitungan menit</p>
+                <p>✓ Dapat belajar pattern kompleks dari data</p>
+                <p>✓ Scalable untuk monitoring continuous</p>
+            </div>
+        </div>
+        
+        <!-- Roboflow Platform Overview -->
+        <div class="section">
+            <h2 class="section-title">🚀 Roboflow Platform Overview</h2>
+            
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                <strong style="color: var(--text-primary);">Roboflow</strong> adalah platform end-to-end untuk computer vision yang memungkinkan workflow tanpa coding:
+            </p>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="value">100%</span>
+                    <span class="label">No-Code Workflow</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">50+</span>
+                    <span class="label">Model Formats</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">Free</span>
+                    <span class="label">Plan Available</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">API</span>
+                    <span class="label">Instant Deployment</span>
+                </div>
+            </div>
+            
+            <h3 class="subsection-title">Fitur Utama Roboflow</h3>
+            <div class="decision-options">
+                <div class="option-card">
+                    <div class="option-title">📦 Roboflow Universe</div>
+                    <div class="option-desc">Dataset marketplace dengan 200,000+ public datasets untuk berbagai use cases</div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🏷️ Annotation Tools</div>
+                    <div class="option-desc">Browser-based labeling untuk bounding box, polygon, segmentation, keypoints</div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🔄 Preprocessing & Augmentation</div>
+                    <div class="option-desc">50+ augmentation techniques dengan visual preview</div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🧠 Roboflow Train</div>
+                    <div class="option-desc">One-click training dengan YOLOv8, YOLOv11, YOLO-NAS, dan model lainnya</div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">📊 Evaluation Dashboard</div>
+                    <div class="option-desc">Real-time metrics, confusion matrix, precision-recall curves</div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🌐 Deployment</div>
+                    <div class="option-desc">Hosted API, mobile SDK, edge deployment (ONNX, TFLite, CoreML)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WORKFLOW SECTION -->
+        <div class="section">
+            <h2 class="section-title">🔧 Workflow: Step-by-Step Tutorial</h2>
+            
+            <!-- FASE 1: SETUP -->
+            <h3 class="subsection-title">FASE 1: Setup & Dataset Acquisition</h3>
+            
+            <!-- STEP 1 -->
+            <div class="step-title">
+                <span class="step-number">1</span>
+                Membuat Akun Roboflow
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Buka browser dan navigate ke <strong><code>https://roboflow.com</code></strong></li>
+                    <li>Klik tombol <strong>"Sign Up"</strong> di pojok kanan atas</li>
+                    <li>Pilih metode sign up:
+                        <ul>
+                            <li>Sign up dengan <strong>Google Account</strong> (recommended - lebih cepat), atau</li>
+                            <li>Sign up dengan <strong>Email & Password</strong></li>
+                        </ul>
+                    </li>
+                    <li>Pilih plan: <strong>"Public Plan (Free)"</strong> - sudah cukup untuk pembelajaran</li>
+                    <li>Verify email jika diminta</li>
+                    <li>Complete profile setup (nama, role, use case)</li>
+                </ol>
+            </div>
+            
+            <img src="asset/praktikum-04/01-signup-page.png" alt="Roboflow Sign Up Page" class="screenshot-img">
+            
+            <div class="info-box success">
+                <strong>✓ Free Plan Features:</strong>
+                <p>• Unlimited public projects</p>
+                <p>• 10,000 source images</p>
+                <p>• Roboflow Train access</p>
+                <p>• Hosted API deployment</p>
+                <p>• Community support</p>
+            </div>
+            
+            <!-- STEP 2 -->
+            <div class="step-title">
+                <span class="step-number">2</span>
+                Navigate ke Roboflow Universe
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Setelah login, klik <strong>"Universe"</strong> di navigation bar atas</li>
+                    <li>Di search bar, ketik: <strong><code>GPR</code></strong> atau <strong><code>gpr hyperbola</code></strong></li>
+                    <li>Atau langsung buka URL: <strong><code>https://universe.roboflow.com/gpr-uurq0/gpr-liosq</code></strong></li>
+                    <li>Review dataset page untuk melihat:
+                        <ul>
+                            <li>Total images (train/val/test)</li>
+                            <li>Number of classes</li>
+                            <li>Example images dengan annotations</li>
+                            <li>Dataset health score</li>
+                            <li>Model benchmarks (jika ada)</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+            
+            <img src="asset/praktikum-04/02-universe-gpr-dataset.png" alt="Roboflow Universe - GPR Dataset Page" class="screenshot-img">
+            
+            <div class="info-box info">
+                <strong>📊 Dataset Information to Note:</strong>
+                <p>• Total images: [lihat di dataset page]</p>
+                <p>• Classes: Biasanya 1 class - "hyperbola"</p>
+                <p>• Format: Object detection (bounding boxes)</p>
+                <p>• Health score: Indicator kualitas annotations</p>
+            </div>
+            
+            <!-- STEP 3 -->
+            <div class="step-title">
+                <span class="step-number">3</span>
+                Fork Dataset ke Workspace Pribadi
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Di halaman dataset GPR, scroll ke bawah dan cari tombol `Use this Dataset` lalu pilih <strong>"Fork Dataset"</strong></li>
+                    <li>Pilih opsi <strong>"Fork to my workspace"</strong> (bukan download langsung)</li>
+                    <li>Dialog akan muncul, beri nama project: <strong><code>GPR-Hyperbola-Detection</code></strong></li>
+                    <li>Pilih workspace (default: personal workspace)</li>
+                    <li>Klik <strong>"Create Project"</strong></li>
+                    <li>Tunggu proses forking (1-3 menit)</li>
+                    <li>Dataset sekarang ada di workspace pribadi Anda!</li>
+                </ol>
+            </div>
+            
+            <img src="asset/praktikum-04/03-fork-dataset-dialog.png" alt="Fork Dataset Dialog" class="screenshot-img">
+            
+            <div class="info-box warning">
+                <strong>⚠️ Alternatif: Jika Fork Tidak Tersedia</strong>
+                <p>Jika tombol "Fork" tidak ada:</p>
+                <p>1. Download dataset (YOLO format recommended)</p>
+                <p>2. Create new project di workspace</p>
+                <p>3. Upload images + annotations manually</p>
+            </div>
+            
+            <!-- STEP 4 -->
+            <div class="step-title">
+                <span class="step-number">4</span>
+                Explore Dataset di Workspace
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Buka project <strong>"GPR-Hyperbola-Detection"</strong> dari workspace</li>
+                    <li>Tab <strong>"Dataset"</strong> - lihat overview:
+                        <ul>
+                            <li>Total images</li>
+                            <li>Classes distribution</li>
+                            <li>Train/Val/Test split ratio</li>
+                            <li>Annotation statistics</li>
+                        </ul>
+                    </li>
+                    <li>Tab <strong>"Images"</strong> - browse sample images:
+                        <ul>
+                            <li>Click image untuk melihat detail</li>
+                            <li>Lihat bounding boxes (hyperbola annotations)</li>
+                            <li>Check annotation quality</li>
+                        </ul>
+                    </li>
+                    <li>Tab <strong>"Health Check"</strong> - review dataset quality:
+                        <ul>
+                            <li>Class balance</li>
+                            <li>Image size distribution</li>
+                            <li>Null annotations (images tanpa label)</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+            
+            <img src="asset/praktikum-04/04-dataset-overview.png" alt="Dataset Overview Dashboard" class="screenshot-img">
+            
+            <img src="asset/praktikum-04/05-sample-gpr-images.png" alt="Sample GPR Images dengan Annotations" class="screenshot-img">
+            
+            <div class="info-box info">
+                <strong>🔍 Analisis yang Perlu Dilakukan:</strong>
+                <ul>
+                    <li>Berapa rata-rata hyperbola per image?</li>
+                    <li>Apakah annotation quality konsisten?</li>
+                    <li>Apakah ada missing annotations (hyperbola tidak ter-label)?</li>
+                    <li>Variasi ukuran bounding boxes (small, medium, large objects)</li>
+                    <li>Image resolution - apakah seragam?</li>
+                </ul>
+            </div>
+            
+            <!-- FASE 2: PREPROCESSING -->
+            <h3 class="subsection-title">FASE 2: Data Preprocessing & Augmentation</h3>
+            
+            <!-- STEP 5 -->
+            <div class="step-title">
+                <span class="step-number">5</span>
+                Generate New Dataset Version dengan Preprocessing
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Di project dashboard, klik tombol <strong>"Generate"</strong></li>
+                    <li>Atau klik <strong>"Versions"</strong> → <strong>"Create New Version"</strong></li>
+                    <li>Halaman "Generate New Version" akan terbuka dengan 3 tabs:
+                        <ul>
+                            <li><strong>Preprocessing</strong> - transformasi images</li>
+                            <li><strong>Augmentation</strong> - create variations</li>
+                            <li><strong>Generate</strong> - finalize & create version</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+            
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Preprocessing Settings</h4>
+            
+            <div class="decision-box">
+                <div class="title">🔧 Recommended Preprocessing for GPR Images</div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Preprocessing</th>
+                            <th>Setting</th>
+                            <th>Alasan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Auto-Orient</strong></td>
+                            <td>✅ ON</td>
+                            <td>Fix image rotation berdasarkan EXIF metadata</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Resize</strong></td>
+                            <td>✅ 640 × 640 px</td>
+                            <td>Standard input size untuk YOLO models (v11, v8, dll)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Resize Method</strong></td>
+                            <td>Stretch to Fit</td>
+                            <td>Atau "Fit (letterbox)" untuk maintain aspect ratio</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Grayscale</strong></td>
+                            <td>❌ OFF</td>
+                            <td>GPR sudah grayscale, tidak perlu konversi</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tile Images</strong></td>
+                            <td>❌ OFF</td>
+                            <td>Hanya untuk very large images (>2000px)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Contrast</strong></td>
+                            <td>❌ OFF</td>
+                            <td>Akan handle via augmentation</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            
+            <!-- STEP 6 -->
+            <div class="step-title">
+                <span class="step-number">6</span>
+                Configure Data Augmentation
+            </div>
+            
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                Augmentation menciptakan variasi dari training images untuk improve model generalization. Klik tab <strong>"Augmentation"</strong> untuk configure.
+            </p>
+            
+            <div class="decision-box">
+                <div class="title">🎨 Recommended Augmentation untuk GPR Dataset</div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Augmentation</th>
+                            <th>Setting</th>
+                            <th>Alasan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Flip Horizontal</strong></td>
+                            <td>✅ ON</td>
+                            <td>Hyperbola bisa muncul dari arah manapun</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Flip Vertical</strong></td>
+                            <td>❌ OFF</td>
+                            <td>Orientasi vertical penting (depth ke bawah)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rotation</strong></td>
+                            <td>✅ ±10° to ±15°</td>
+                            <td>GPR profile bisa sedikit miring saat acquisition</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Crop</strong></td>
+                            <td>❌ OFF</td>
+                            <td>Bisa potong hyperbola, tidak disarankan</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Brightness</strong></td>
+                            <td>✅ ±15% to ±20%</td>
+                            <td>GPR intensity bisa bervariasi</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Exposure</strong></td>
+                            <td>✅ ±10% to ±15%</td>
+                            <td>Variasi kondisi acquisition</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Blur</strong></td>
+                            <td>✅ Up to 1.5px</td>
+                            <td>Simulate noise/low resolution data</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Noise</strong></td>
+                            <td>✅ Up to 2% pixels</td>
+                            <td>Realistic GPR data often has noise</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cutout</strong></td>
+                            <td>❌ OFF</td>
+                            <td>Bisa hide hyperbola features</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mosaic</strong></td>
+                            <td>❌ OFF</td>
+                            <td>Tidak cocok untuk GPR spatial continuity</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="info-box warning">
+                <strong>⚙️ Augmentation Multiplier:</strong>
+                <p><strong>Jika dataset KECIL</strong> (<100 images): Pilih <strong>3x</strong> multiplier</p>
+                <p><strong>Jika dataset MEDIUM</strong> (100-500 images): Pilih <strong>2x</strong> multiplier</p>
+                <p><strong>Jika dataset BESAR</strong> (>500 images): Pilih <strong>None</strong> atau <strong>2x</strong></p>
+                <p>Augmentation multiplier = berapa kali augmented version dibuat per original image</p>
+            </div>
+            
+            
+            <!-- STEP 7 -->
+            <div class="step-title">
+                <span class="step-number">7</span>
+                Configure Dataset Split
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Klik tab <strong>"Generate"</strong> (tab terakhir)</li>
+                    <li>Review <strong>Preprocessing Summary</strong> dan <strong>Augmentation Summary</strong></li>
+                    <li>Configure <strong>Dataset Split</strong>:</li>
+                </ol>
+            </div>
+            
+            <div class="decision-box">
+                <div class="title">📊 Recommended Split Ratios</div>
+                
+                <div class="decision-options">
+                    <div class="option-card">
+                        <div class="option-title">Standard Split</div>
+                        <div class="option-desc">
+                            <strong>Train:</strong> 70%<br>
+                            <strong>Valid:</strong> 20%<br>
+                            <strong>Test:</strong> 10%
+                        </div>
+                        <span class="badge recommended">RECOMMENDED</span>
+                    </div>
+                    
+                    <div class="option-card">
+                        <div class="option-title">Small Dataset Split</div>
+                        <div class="option-desc">
+                            <strong>Train:</strong> 80%<br>
+                            <strong>Valid:</strong> 15%<br>
+                            <strong>Test:</strong> 5%
+                        </div>
+                        <span class="badge">Untuk dataset <100 images</span>
+                    </div>
+                    
+                    <div class="option-card">
+                        <div class="option-title">Large Dataset Split</div>
+                        <div class="option-desc">
+                            <strong>Train:</strong> 60%<br>
+                            <strong>Valid:</strong> 20%<br>
+                            <strong>Test:</strong> 20%
+                        </div>
+                        <span class="badge">Untuk dataset >1000 images</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step-list">
+                <ol start="4">
+                    <li>Pastikan <strong>"Stratified split"</strong> ON (untuk balance class distribution)</li>
+                    <li>Review summary - estimasi total images setelah augmentation</li>
+                    <li>Klik tombol <strong>"Generate"</strong></li>
+                    <li>Tunggu proses generate (1-5 menit tergantung ukuran dataset)</li>
+                </ol>
+            </div>
+            
+            <img src="asset/praktikum-04/08-generate-dataset-config.png" alt="Generate Dataset - Final Configuration" class="screenshot-img">
+            
+            <div class="info-box success">
+                <strong>✓ Dataset Version Created!</strong>
+                <p>Setelah proses selesai, Anda akan memiliki:</p>
+                <p>• <strong>Version 1</strong> (atau version berikutnya jika sudah ada versions sebelumnya)</p>
+                <p>• Preprocessing applied (resize, auto-orient)</p>
+                <p>• Augmentation applied (jika enabled)</p>
+                <p>• Train/Val/Test splits</p>
+                <p>• Ready untuk training!</p>
+            </div>
+            
+            <!-- FASE 3: TRAINING -->
+            <h3 class="subsection-title">FASE 3: Model Training</h3>
+            
+            <!-- STEP 8 -->
+            <div class="step-title">
+                <span class="step-number">8</span>
+                Start Model Training
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Di dataset version yang baru dibuat (Version 1), klik tombol <strong>"Train with Roboflow"</strong></li>
+                    <li>Pilih <strong>"Roboflow Train 3.0"</strong> (recommended - fastest & latest)</li>
+                    <li>Halaman training configuration akan terbuka</li>
+                </ol>
+            </div>
+            
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Model Selection</h4>
+            
+            <div class="decision-box">
+                <div class="title">🧠 Choose Your Model</div>
+
+                <div class="decision-options">
+                    <div class="option-card">
+                        <div class="option-title">Roboflow RF-DETR</div>
+                        <div class="option-desc">
+                            Fast, real-time model. Highest accuracy on COCO<br>
+                            Needs less data and converges earlier. Slower training<br>
+                            <strong>Model Size:</strong> Small
+                        </div>
+                        <span class="badge accurate">RECOMMENDED BY ROBOFLOW</span>
+                    </div>
+
+                    <div class="option-card">
+                        <div class="option-title">YOLO26</div>
+                        <div class="option-desc">
+                            Latest from Ultralytics<br>
+                            End-to-end NMS-free inference<br>
+                            Faster CPU inference<br>
+                            <strong>Model Size:</strong> Nano
+                        </div>
+                        <span class="badge fastest">FASTEST CPU</span>
+                    </div>
+
+                    <div class="option-card">
+                        <div class="option-title">Roboflow 3.0</div>
+                        <div class="option-desc">
+                            YOLOv8-compatible<br>
+                            Custom performance enhancements<br>
+                            Balance of speed & accuracy<br>
+                            <strong>Model Size:</strong> Fast
+                        </div>
+                        <span class="badge">BALANCED</span>
+                    </div>
+
+                    <div class="option-card" style="border-color: var(--accent-purple);">
+                        <div class="option-title">YOLOv11 Nano</div>
+                        <div class="option-desc">
+                            Successor to YOLOv8<br>
+                            Fast, efficient inference<br>
+                            <strong>Model Size:</strong> Nano<br>
+                            <strong>Use case:</strong> Edge deployment, efisien
+                        </div>
+                        <span class="badge recommended">YANG KITA PAKAI</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box info">
+                <strong>💡 Model Selection Guide:</strong>
+                <p><strong>Untuk praktikum ini:</strong> Pilih <strong>YOLOv11</strong> dengan <strong>Model Size: Nano</strong></p>
+                <p>• Nano: ringan dan cepat, cocok untuk dataset learning</p>
+                <p>• Successor YOLOv8 dengan inference lebih efisien</p>
+                <p>• Jika hasil kurang memuaskan, upgrade ke size Small atau Medium</p>
+            </div>
+
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Training Configuration</h4>
+
+            <div class="step-list">
+                <ol>
+                    <li>Select model: <strong>YOLOv11</strong> → Model Size: <strong>Nano</strong></li>
+                    <li>Training settings (biasanya auto-optimized):
+                        <ul>
+                            <li><strong>Epochs:</strong> 100 (dengan early stopping)</li>
+                            <li><strong>Batch size:</strong> Auto (Roboflow optimize based on GPU)</li>
+                            <li><strong>Image size:</strong> 640 × 640 (sesuai preprocessing)</li>
+                            <li><strong>Optimizer:</strong> Adam (default)</li>
+                        </ul>
+                    </li>
+                    <li>Klik tombol <strong>"Start Training"</strong></li>
+                    <li>Training job akan masuk queue (biasanya instant jika free GPU available)</li>
+                </ol>
+            </div>
+            
+            <img src="asset/praktikum-04/09-training-config.png" alt="Training Configuration Page" class="screenshot-img">
+            
+            <div class="info-box warning">
+                <strong>⏱️ Training Time Estimates:</strong>
+                <p><strong>Small dataset</strong> (<100 images): ~5-10 menit</p>
+                <p><strong>Medium dataset</strong> (100-500 images): ~10-20 menit</p>
+                <p><strong>Large dataset</strong> (>500 images): ~20-40 menit</p>
+                <p>Note: Free plan menggunakan shared GPU, bisa ada waiting time</p>
+            </div>
+            
+            <!-- STEP 9 -->
+            <div class="step-title">
+                <span class="step-number">9</span>
+                Monitor Training Progress
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Setelah training dimulai, Anda akan diredirect ke <strong>Training Dashboard</strong></li>
+                    <li>Dashboard menampilkan <strong>real-time metrics</strong>:
+                        <ul>
+                            <li><strong>Loss curves</strong> (Box, Object, Class loss)</li>
+                            <li><strong>Precision</strong> - seberapa akurat predictions</li>
+                            <li><strong>Recall</strong> - seberapa banyak hyperbola terdeteksi</li>
+                            <li><strong>mAP@0.5</strong> - mean average precision at 50% IoU</li>
+                            <li><strong>mAP@0.5:0.95</strong> - average mAP across IoU thresholds</li>
+                        </ul>
+                    </li>
+                    <li>Charts update setiap beberapa epochs</li>
+                    <li><strong>Early stopping:</strong> Training otomatis berhenti jika validation loss tidak improve selama 10-15 epochs</li>
+                </ol>
+            </div>
+            
+            <img src="asset/praktikum-04/10-training-dashboard.png" alt="Training Dashboard - Live Metrics" class="screenshot-img">
+            
+            <div class="info-box success">
+                <strong>✓ What to Look For During Training:</strong>
+                <ul>
+                    <li><strong>Loss decreasing:</strong> Training berjalan baik</li>
+                    <li><strong>Train & Val loss converging:</strong> Model generalizing well</li>
+                    <li><strong>Precision & Recall increasing:</strong> Performance improving</li>
+                    <li><strong>mAP increasing:</strong> Overall quality meningkat</li>
+                </ul>
+            </div>
+            
+            <div class="info-box warning">
+                <strong>⚠️ Warning Signs:</strong>
+                <ul>
+                    <li><strong>Loss stuck/plateau:</strong> Mungkin perlu learning rate adjustment</li>
+                    <li><strong>Val loss increasing while train loss decreasing:</strong> Overfitting!</li>
+                    <li><strong>Very low metrics (<50%):</strong> Dataset quality issue atau wrong model</li>
+                </ul>
+            </div>
+            
+            <!-- FASE 4: EVALUATION -->
+            <h3 class="subsection-title">FASE 4: Model Evaluation & Testing</h3>
+            
+            <!-- STEP 10 -->
+            <div class="step-title">
+                <span class="step-number">10</span>
+                Review Training Results
+            </div>
+            
+            <div class="step-list">
+                <ol>
+                    <li>Setelah training selesai, tab <strong>"Results"</strong> akan menampilkan comprehensive metrics</li>
+                    <li>Review <strong>Metrics Summary</strong>:</li>
+                </ol>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="value">~78%</span>
+                    <span class="label">Precision (B)</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">~68%</span>
+                    <span class="label">Recall (B)</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">~68%</span>
+                    <span class="label">mAP@0.5 (B)</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">~32%</span>
+                    <span class="label">mAP@0.5:0.95 (B)</span>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <strong>📌 Konteks Hasil — YOLOv11 Nano, ~250 Epochs</strong>
+                <p>• <strong>Precision ~78%</strong>: Dari semua deteksi yang dibuat, 78% benar → false positive masih ada tapi terkontrol</p>
+                <p>• <strong>Recall ~68%</strong>: 68% dari semua hyperbola berhasil terdeteksi → ada ~32% yang masih terlewat</p>
+                <p>• <strong>mAP@0.5 ~68%</strong>: Performa solid untuk model Nano pada dataset GPR</p>
+                <p>• <strong>mAP@0.5:0.95 ~32%</strong>: Wajar untuk Nano — metric ini sangat strict (lokalisasi presisi)</p>
+                <p>• Loss curves train & val keduanya menurun konsisten → <strong>tidak ada overfitting signifikan</strong></p>
+            </div>
+
+            <img src="asset/praktikum-04/11-training-results.png" alt="Advanced Training Graphs - YOLOv11 Nano GPR Hyperbola" class="screenshot-img">
+
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Understanding Metrics — YOLOv11</h4>
+
+            <div class="info-box info">
+                <strong>📊 Loss Components (YOLOv11):</strong>
+                <p><strong>train/box_loss & val/box_loss</strong></p>
+                <p>Error lokalisasi bounding box (posisi & ukuran). Turun dari ~2.6 → ~1.2 (train) dan stabil ~2.0 (val) → model makin akurat menempatkan box.</p>
+
+                <p style="margin-top: 1rem;"><strong>train/cls_loss & val/cls_loss</strong></p>
+                <p>Error klasifikasi kelas objek. Turun dari ~3.0 → ~1.0 (train) dan ~5+ → ~1.1 (val) → model belajar membedakan hyperbola dari background.</p>
+
+                <p style="margin-top: 1rem;"><strong>train/dfl_loss & val/dfl_loss</strong></p>
+                <p>Distribution Focal Loss — loss untuk presisi tepi bounding box (fitur baru YOLOv11). Turun dari ~2.5 → ~1.4 (train) dan stabil ~2.3 (val).</p>
+
+                <p style="margin-top: 1.2rem;"><strong>📈 Detection Metrics:</strong></p>
+                <p><strong>Precision = TP / (TP + FP)</strong> — dari semua deteksi yang dibuat model, berapa persen yang benar? High precision = sedikit false positives.</p>
+
+                <p style="margin-top: 0.8rem;"><strong>Recall = TP / (TP + FN)</strong> — dari semua hyperbola yang ada, berapa persen terdeteksi? High recall = sedikit hyperbola yang terlewat.</p>
+
+                <p style="margin-top: 0.8rem;"><strong>mAP@0.5</strong> — mean Average Precision pada IoU threshold 50%. Metric utama object detection.</p>
+                <p><strong>mAP@0.5:0.95</strong> — rata-rata mAP dari IoU 50% sampai 95% (step 5%). Lebih strict, mengukur kualitas lokalisasi box.</p>
+            </div>
+
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Available Charts & Visualizations</h4>
+
+            <div class="step-list">
+                <ol>
+                    <li><strong>Advanced Training Graphs</strong> - 10 plot: train/val box_loss, cls_loss, dfl_loss, precision, recall, mAP50, mAP50-95</li>
+                    <li><strong>Confusion Matrix</strong> - True/False Positives/Negatives breakdown per class</li>
+                    <li><strong>Precision-Recall Curve</strong> - Trade-off visualization dengan area under curve</li>
+                    <li><strong>F1 Curve</strong> - F1 score vs confidence threshold</li>
+                </ol>
+            </div>
+            
+            <!-- STEP 11 -->
+            <div class="step-title">
+                <span class="step-number">11</span>
+                Deploy & Test Model dengan Roboflow Workflows
+            </div>
+
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                Roboflow menggunakan sistem <strong style="color: var(--text-primary);">Workflows</strong> untuk deploy dan test model secara visual. Workflow mendefinisikan pipeline deteksi dari input image hingga output annotated.
+            </p>
+
+            <div class="step-list">
+                <ol>
+                    <li>Setelah training selesai, klik tab <strong>"Deploy"</strong> di navigation</li>
+                    <li>Pilih <strong>"Deploy your model with Workflows"</strong></li>
+                    <li>Dialog <strong>"Popular Templates"</strong> akan muncul dengan pilihan:
+                        <ul>
+                            <li><strong>Detect, Count, and Visualize</strong> ← pilih ini (default & paling lengkap)</li>
+                            <li>Detect and Classify</li>
+                            <li>Small Object Detection (SAHI)</li>
+                            <li>Text Recognition</li>
+                        </ul>
+                    </li>
+                    <li>Pilih template <strong>"Detect, Count, and Visualize"</strong> — workflow otomatis terbentuk dengan nodes:
+                        <ul>
+                            <li><strong>Inputs</strong> → terima image input</li>
+                            <li><strong>Object Detection Model</strong> (<code>gpr-liosq-j4vtr/1</code>) → jalankan deteksi</li>
+                            <li><strong>Bounding Box Visualization</strong> (<code>detection_visualization</code>) → gambar bounding boxes</li>
+                            <li><strong>Property Definition</strong> (<code>count_objects</code>) → hitung jumlah deteksi</li>
+                            <li><strong>Label Visualization</strong> (<code>annotated_image</code>) → tambah label teks</li>
+                            <li><strong>Outputs</strong> (3 outputs) → kirim hasil</li>
+                        </ul>
+                    </li>
+                    <li>Di panel kanan, pastikan model <strong>gpr-liosq-j4vtr/1</strong> sudah terpilih (status: <em>Selected</em>)</li>
+                    <li>Klik tombol <strong>"Create Workflow"</strong></li>
+                </ol>
+            </div>
+
+            <img src="asset/praktikum-04/14-web-inference-interface.png" alt="Deploy your model with Workflows - Detect, Count, and Visualize" class="screenshot-img">
+
+            <div class="info-box info">
+                <strong>🔄 Cara Kerja Workflow Pipeline:</strong>
+                <p><strong>Inputs</strong> → <strong>Object Detection Model</strong> → <strong>Bounding Box Visualization</strong> + <strong>Property Definition</strong> → <strong>Label Visualization</strong> → <strong>Outputs</strong></p>
+                <p>• Model node menjalankan YOLOv11 Nano pada setiap image yang masuk</p>
+                <p>• Visualization nodes menggambar hasil deteksi (bounding boxes + label) secara otomatis</p>
+                <p>• count_objects menghitung total hyperbola yang terdeteksi per image</p>
+                <p>• 3 outputs: annotated image, raw detections (JSON), jumlah objek</p>
+            </div>
+
+            <div class="info-box success">
+                <strong>✅ Setelah Workflow Dibuat — Cara Test:</strong>
+                <p>1. Buka workflow yang sudah dibuat</p>
+                <p>2. Klik <strong>"Try it"</strong> atau <strong>"Run"</strong> untuk upload test image</p>
+                <p>3. Drag & drop GPR image ke input node</p>
+                <p>4. Workflow otomatis memproses dan menampilkan annotated result</p>
+                <p>5. Review: bounding boxes hyperbola + jumlah deteksi per image</p>
+            </div>
+
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Hasil Inference — "Test Your Workflow"</h4>
+
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                Setelah workflow berjalan, Roboflow menampilkan dua panel hasil: <strong style="color: var(--text-primary);">Visual</strong> (radargram dengan bounding box) dan <strong style="color: var(--text-primary);">Output</strong> (raw JSON detection data).
+            </p>
+
+            <img src="asset/praktikum-04/15-inference-results.png" alt="Workflow Test Result - GPR Hyperbola Detection" class="screenshot-img">
+
+            <div class="info-box success">
+                <strong>✅ Contoh Hasil Deteksi Aktual (dari workflow di atas):</strong>
+                <p><strong>Visual panel:</strong> GPR radargram dengan 1 bounding box ungu menandai hyperbola di area shallow (~2–4 nsec)</p>
+                <p><strong>Output JSON:</strong></p>
+                <div style="background: var(--bg-code); padding: 1rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent-cyan); margin: 0.8rem 0; overflow-x: auto;">
+                    <span style="color: var(--text-muted);">// count_objects</span><br>
+                    "t_objects": 1,<br><br>
+                    <span style="color: var(--text-muted);">// predictions[0]</span><br>
+                    "width": 69, "height": 54,<br>
+                    "x": 137.5, "y": 32,<br>
+                    "confidence": <span style="color: var(--accent-green);">0.639</span>,<br>
+                    "class": <span style="color: var(--accent-orange);">"Hyperbola"</span>,<br>
+                    "class_id": 0
+                </div>
+                <p>• <strong>1 hyperbola</strong> terdeteksi dengan confidence <strong>63.9%</strong></p>
+                <p>• Bounding box: lebar 69px × tinggi 54px, center di (137.5, 32)</p>
+                <p>• Image size: 249 × 203 px</p>
+            </div>
+
+            <div class="info-box info">
+                <strong>📖 Cara Membaca Output JSON Workflow:</strong>
+                <p><strong>t_objects</strong> (count_objects) → jumlah total hyperbola yang terdeteksi</p>
+                <p><strong>x, y</strong> → koordinat center bounding box (pixel)</p>
+                <p><strong>width, height</strong> → ukuran bounding box (pixel)</p>
+                <p><strong>confidence</strong> → skor keyakinan model (0–1), nilai 0.639 = 63.9%</p>
+                <p><strong>class</strong> → nama kelas yang terdeteksi ("Hyperbola")</p>
+                <p><strong>detection_id</strong> → ID unik setiap deteksi untuk tracking</p>
+            </div>
+            
+            <!-- FASE 5: INTERPRETATION -->
+            <h3 class="subsection-title">FASE 5: Geophysical Interpretation</h3>
+            
+            <!-- STEP 12 -->
+            <div class="step-title">
+                <span class="step-number">12</span>
+                Interpretasi Hasil Deteksi dalam Konteks Geofisika
+            </div>
+            
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                Setelah model mendeteksi hyperbola, kita perlu extract informasi geofisika yang berguna dari bounding boxes.
+            </p>
+            
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Dari Bounding Box ke Parameter Geofisika</h4>
+            
+            <div class="info-box success">
+                <strong>1. Depth Estimation (Estimasi Kedalaman Objek)</strong>
+                <p><strong>Parameter:</strong> Y-coordinate dari bounding box center (apex hyperbola)</p>
+                <p><strong>Konversi:</strong></p>
+                <p>• Y-pixel → Two-way travel time (TWTT)</p>
+                <p>• TWTT → Depth menggunakan velocity</p>
+                <p><strong>Formula:</strong></p>
+                <p style="background: var(--bg-code); padding: 0.8rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                    Depth (m) = (Velocity × TWTT) / 2
+                </p>
+                <p><strong>Example:</strong></p>
+                <p>Apex at y=200 pixels, time scale 0.5 ns/pixel, velocity 0.1 m/ns:</p>
+                <p>TWTT = 200 × 0.5 = 100 ns</p>
+                <p>Depth = (0.1 × 100) / 2 = 5 meters</p>
+            </div>
+            
+            <div class="info-box success">
+                <strong>2. Velocity Estimation (dari Hyperbola Curvature)</strong>
+                <p><strong>Parameter:</strong> Width dari bounding box relatif terhadap depth</p>
+                <p><strong>Konsep:</strong></p>
+                <p>• Wide hyperbola → Low velocity material</p>
+                <p>• Narrow hyperbola → High velocity material</p>
+                <p><strong>Relationship:</strong></p>
+                <p style="background: var(--bg-code); padding: 0.8rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                    Velocity ∝ 1 / (Hyperbola Width)
+                </p>
+                <p>Untuk precise velocity: perlu hyperbola fitting algorithm (diffraction curve matching)</p>
+            </div>
+            
+            <div class="info-box success">
+                <strong>3. Object Size Estimation</strong>
+                <p><strong>Parameter:</strong> Amplitude dan width dari hyperbola</p>
+                <p><strong>Interpretation:</strong></p>
+                <p>• Large amplitude → Strong contrast (metal pipe, large void)</p>
+                <p>• Weak amplitude → Subtle contrast (soil boundary, small object)</p>
+                <p>• Horizontal width → Lateral extent of object</p>
+            </div>
+            
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Multiple Hyperbola Analysis</h4>
+            
+            <div class="info-box info">
+                <strong>📊 Interpretasi Multi-Detection:</strong>
+                <p><strong>Scenario 1: Vertical alignment</strong></p>
+                <p>Multiple hyperbolas di x-position sama tapi depth berbeda → Multiple interfaces/layers</p>
+                
+                <p style="margin-top: 1rem;"><strong>Scenario 2: Horizontal pattern</strong></p>
+                <p>Hyperbolas dengan spacing regular → Buried utility network (pipes, cables)</p>
+                
+                <p style="margin-top: 1rem;"><strong>Scenario 3: Clustered detections</strong></p>
+                <p>High density hyperbolas di area tertentu → Zone of interest (archaeological site, contaminated zone)</p>
+            </div>
+            
+            <h4 style="color: var(--accent-cyan); margin: 1.5rem 0 1rem 0;">Real-world Applications</h4>
+            
+            <div class="decision-options">
+                <div class="option-card">
+                    <div class="option-title">🏗️ Utility Mapping</div>
+                    <div class="option-desc">
+                        Deteksi pipa, kabel, underground infrastructure sebelum excavation untuk avoid damage
+                    </div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🏛️ Archaeology</div>
+                    <div class="option-desc">
+                        Locating buried artifacts, structures, atau features tanpa invasive digging
+                    </div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🛣️ Pavement Assessment</div>
+                    <div class="option-desc">
+                        Detect voids, delamination, atau defects dalam aspal dan concrete roads
+                    </div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">⚠️ Environmental Hazard</div>
+                    <div class="option-desc">
+                        Identifying buried drums, tanks, contamination plumes di former industrial sites
+                    </div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🌳 Tree Root Mapping</div>
+                    <div class="option-desc">
+                        Non-destructive root system imaging untuk urban forestry management
+                    </div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🏔️ Geological Mapping</div>
+                    <div class="option-desc">
+                        Subsurface stratigraphy, bedrock depth, fault detection
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Best Practices -->
+        <div class="section">
+            <h2 class="section-title">💡 Best Practices & Tips</h2>
+            
+            <h3 class="subsection-title">Dataset Quality Checklist</h3>
+            <div class="checklist">
+                <div class="checklist-item">
+                    <input type="checkbox" id="check1">
+                    <label for="check1">Annotations konsisten dan akurat (hyperbola apex included dalam box)</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="check2">
+                    <label for="check2">Minimum 100 annotated images untuk training yang baik</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="check3">
+                    <label for="check3">Dataset mencakup variasi: different depths, sizes, noise levels</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="check4">
+                    <label for="check4">Class distribution balanced (tidak ada severe imbalance)</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="check5">
+                    <label for="check5">Image quality acceptable (not too blurry or low resolution)</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="check6">
+                    <label for="check6">No duplicate images antara train/val/test splits</label>
+                </div>
+            </div>
+            
+            <h3 class="subsection-title">Augmentation Strategy</h3>
+            <div class="info-box warning">
+                <strong>⚙️ Start Conservative, Iterate:</strong>
+                <p><strong>First iteration:</strong> Minimal augmentation (flip horizontal, brightness ±10%)</p>
+                <p><strong>Evaluate results:</strong> If underfitting → add more augmentation</p>
+                <p><strong>Second iteration:</strong> Add rotation ±15°, blur, noise</p>
+                <p><strong>Avoid:</strong> Augmentations yang destroy GPR physics (vertical flip, extreme crops)</p>
+            </div>
+            
+            <h3 class="subsection-title">Troubleshooting Common Issues</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Problem</th>
+                        <th>Possible Cause</th>
+                        <th>Solution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Low Precision (<70%)</td>
+                        <td>Too many false positives - model detects noise as hyperbola</td>
+                        <td>• Increase confidence threshold<br>• Add more negative samples (images without hyperbolas)<br>• Review annotation quality</td>
+                    </tr>
+                    <tr>
+                        <td>Low Recall (<70%)</td>
+                        <td>Missing many hyperbolas</td>
+                        <td>• Decrease confidence threshold<br>• Train for more epochs<br>• Use larger model (Medium instead of Small)<br>• Check if small hyperbolas are annotated</td>
+                    </tr>
+                    <tr>
+                        <td>Overfitting (high train, low val)</td>
+                        <td>Model memorizing training data</td>
+                        <td>• Add more augmentation<br>• Reduce training epochs<br>• Increase dataset size<br>• Use smaller model</td>
+                    </tr>
+                    <tr>
+                        <td>Poor performance overall</td>
+                        <td>Dataset quality issues</td>
+                        <td>• Review annotations for errors<br>• Ensure sufficient training data (>100 images)<br>• Check image quality<br>• Verify class balance</td>
+                    </tr>
+                    <tr>
+                        <td>Training stuck/not converging</td>
+                        <td>Learning rate or model architecture issue</td>
+                        <td>• Try different model (YOLOv11 instead of v8)<br>• Check for data loading errors<br>• Contact Roboflow support if persists</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 class="subsection-title">Model Selection Guide (Quick Reference)</h3>
+            
+            <div class="decision-box">
+                <div class="title">🎯 When to Use Which Model? (Tersedia di Roboflow)</div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Use Case</th>
+                            <th>Recommended Model</th>
+                            <th>Rationale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>✅ Praktikum ini</strong></td>
+                            <td><strong>YOLOv11 Nano</strong></td>
+                            <td>Fast & efficient, cocok untuk learning & dataset kecil</td>
+                        </tr>
+                        <tr>
+                            <td>Highest accuracy on COCO, sedikit data</td>
+                            <td>Roboflow RF-DETR (Small)</td>
+                            <td>Converges earlier, cocok kalau data terbatas</td>
+                        </tr>
+                        <tr>
+                            <td>Balance speed & accuracy, production</td>
+                            <td>Roboflow 3.0 (Fast)</td>
+                            <td>YOLOv8-compatible dengan custom enhancements</td>
+                        </tr>
+                        <tr>
+                            <td>Fastest CPU inference, edge device</td>
+                            <td>YOLO26 (Nano)</td>
+                            <td>NMS-free inference, faster on CPU</td>
+                        </tr>
+                        <tr>
+                            <td>Small object detection (tiny hyperbolas)</td>
+                            <td>YOLOv11 (Small/Medium)</td>
+                            <td>Upgrade size jika Nano kurang akurat</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Summary & Next Steps -->
+        <div class="section">
+            <h2 class="section-title">🎓 Summary & Next Steps</h2>
+            
+            <div class="info-box success">
+                <strong>✅ Apa yang Sudah Dipelajari:</strong>
+                <p>✓ Computer vision & object detection fundamentals</p>
+                <p>✓ Ground Penetrating Radar dan hyperbola detection</p>
+                <p>✓ Roboflow platform - end-to-end no-code workflow</p>
+                <p>✓ Dataset preprocessing & augmentation strategies</p>
+                <p>✓ YOLOv11 Nano model training & evaluation (~250 epochs)</p>
+                <p>✓ Deploy & inference via Roboflow Workflows (Detect, Count, and Visualize)</p>
+                <p>✓ Geophysical interpretation dari detection results</p>
+            </div>
+            
+            <h3 class="subsection-title">Langkah Selanjutnya</h3>
+            
+            <div class="decision-options">
+                <div class="option-card">
+                    <div class="option-title">🔬 Experiment Further</div>
+                    <div class="option-desc">
+                        • Try different augmentation combinations<br>
+                        • Compare YOLOv11 Nano vs Small vs Medium performance<br>
+                        • Test model pada GPR data dari different sites
+                    </div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">📊 Advanced Analysis</div>
+                    <div class="option-desc">
+                        • Extract bounding box coordinates untuk depth profiling<br>
+                        • Implement velocity analysis workflow<br>
+                        • Create hyperbola density maps
+                    </div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">🚀 Integration</div>
+                    <div class="option-desc">
+                        • Integrate Roboflow API ke GPR processing pipeline<br>
+                        • Build custom web app untuk GPR interpretation<br>
+                        • Deploy ke edge device untuk field use
+                    </div>
+                </div>
+                
+                <div class="option-card">
+                    <div class="option-title">📚 Explore Other Datasets</div>
+                    <div class="option-desc">
+                        • Roboflow Universe: 200,000+ datasets<br>
+                        • Try seismic facies detection<br>
+                        • Satellite imagery analysis untuk geohazards
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- References -->
+        <div class="section">
+            <h2 class="section-title">📖 Referensi</h2>
+            
+            <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
+                <h4 style="color: var(--accent-cyan); margin-bottom: 1rem;">Platform & Documentation</h4>
+                <ol style="color: var(--text-secondary); padding-left: 1.5rem;">
+                    <li style="margin: 0.5rem 0;">Roboflow Documentation: <a href="https://docs.roboflow.com" style="color: var(--accent-cyan);">https://docs.roboflow.com</a></li>
+                    <li style="margin: 0.5rem 0;">Roboflow Universe: <a href="https://universe.roboflow.com" style="color: var(--accent-cyan);">https://universe.roboflow.com</a></li>
+                    <li style="margin: 0.5rem 0;">YOLO Documentation: <a href="https://docs.ultralytics.com" style="color: var(--accent-cyan);">https://docs.ultralytics.com</a></li>
+                </ol>
+            </div>
+            
+            <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
+                <h4 style="color: var(--accent-cyan); margin-bottom: 1rem;">GPR & Geophysics</h4>
+                <ol style="color: var(--text-secondary); padding-left: 1.5rem;">
+                    <li style="margin: 0.5rem 0;">Jol, H. M. (2008). <em>Ground Penetrating Radar: Theory and Applications</em>. Elsevier.</li>
+                    <li style="margin: 0.5rem 0;">Daniels, D. J. (2004). <em>Ground Penetrating Radar (2nd ed.)</em>. IET.</li>
+                    <li style="margin: 0.5rem 0;">Annan, A. P. (2009). "Electromagnetic Principles of Ground Penetrating Radar." In <em>Ground Penetrating Radar: Theory and Applications</em>.</li>
+                </ol>
+            </div>
+            
+            <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
+                <h4 style="color: var(--accent-cyan); margin-bottom: 1rem;">Deep Learning for GPR</h4>
+                <ol style="color: var(--text-secondary); padding-left: 1.5rem;">
+                    <li style="margin: 0.5rem 0;">Jazayeri, S., et al. (2023). "Deep learning for GPR-based utility mapping." <em>Automation in Construction</em>, 145, 104642.</li>
+                    <li style="margin: 0.5rem 0;">Kim, N., et al. (2020). "Vision-Based Object Detection and Tracking for Autonomous Navigation of Underwater Robots." <em>Sensors</em>, 20(5), 1588.</li>
+                    <li style="margin: 0.5rem 0;">Zhang, Y., et al. (2021). "Automatic detection of underground objects using GPR with deep learning." <em>NDT & E International</em>, 123, 102511.</li>
+                </ol>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div class="footer">
+        <p><strong>Machine Learning dalam Geofisika</strong></p>
+        <p>Praktikum 04: Computer Vision dengan Roboflow - GPR Hyperbola Detection</p>
+        <p style="margin-top: 1rem; color: var(--text-muted);">
+            Institut Teknologi Sumatera | Teknik Geofisika | 2025
+        </p>
+    </div>
+</body>
+</html>
