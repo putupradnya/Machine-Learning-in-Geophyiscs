@@ -75,6 +75,8 @@
         .visualizer-container { background-color: #030712; padding: 1rem; border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; min-height: 420px; }
         canvas { border: 1px solid var(--border); border-radius: 0.25rem; background-color: #000; display: block; }
     </style>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js" defer></script>
 </head>
 <body>
 
@@ -183,6 +185,10 @@
     </div>
 
     <script>
+        function canvasThemeColor(name, fallback) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+        }
+
         // Tab Switcher
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -296,14 +302,14 @@
             const w = canvasP.width - 2 * pad;
             const h = canvasP.height - 2 * pad;
 
-            ctxP.strokeStyle = '#9ca3af';
+            ctxP.strokeStyle = canvasThemeColor('--canvas-axis', '#9ca3af');
             ctxP.lineWidth = 1;
             ctxP.beginPath();
             ctxP.moveTo(pad, pad); ctxP.lineTo(pad, h + pad);
             ctxP.lineTo(w + pad, h + pad);
             ctxP.stroke();
 
-            ctxP.fillStyle = '#fff'; ctxP.font = '10px sans-serif'; 
+            ctxP.fillStyle = canvasThemeColor('--text-main', '#f3f4f6'); ctxP.font = '10px sans-serif';
             ctxP.fillText("Suhu °C", 5, 20);
             ctxP.fillText("0", pad - 15, h + pad + 5);
             ctxP.fillText("50", pad - 20, h/2 + pad);
@@ -388,19 +394,19 @@
             const h = canvasH.height - 2 * pad;
             const centerY = h/2 + pad;
 
-            ctxH.strokeStyle = '#374151';
+            ctxH.strokeStyle = canvasThemeColor('--canvas-grid', '#374151');
             ctxH.lineWidth = 1;
             ctxH.beginPath();
             ctxH.moveTo(pad, centerY); ctxH.lineTo(w+pad, centerY); ctxH.stroke();
 
-            ctxH.strokeStyle = '#9ca3af';
+            ctxH.strokeStyle = canvasThemeColor('--canvas-axis', '#9ca3af');
             ctxH.beginPath();
             ctxH.moveTo(pad, pad); ctxH.lineTo(pad, h + pad);
             ctxH.moveTo(pad, h + pad); ctxH.lineTo(w + pad, h + pad);
             ctxH.stroke();
 
             const cfl = parseFloat(document.getElementById('inp-hyperbolic-cfl').value) || 0;
-            ctxH.strokeStyle = (cfl > 1.0) ? '#f87171' : '#fff';
+            ctxH.strokeStyle = (cfl > 1.0) ? '#f87171' : canvasThemeColor('--text-main', '#f3f4f6');
             ctxH.lineWidth = 2;
             ctxH.beginPath();
 
