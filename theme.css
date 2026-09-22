@@ -6,6 +6,8 @@
     --bg-tertiary: #eaf0f7;
     --bg-code: #f1f5f9;
     --code-bg: #f1f5f9;
+    --code-string: #92400e;
+    --code-number: #92400e;
     --accent-primary: #087ea4;
     --accent-secondary: #6d28d9;
     --accent-cyan: #087ea4;
@@ -50,6 +52,8 @@ html[data-theme="dark"] {
     --bg-tertiary: #1e2530;
     --bg-code: #0d1117;
     --code-bg: #0d1117;
+    --code-string: #f1fa8c;
+    --code-number: #f59e0b;
     --accent-primary: #00d9ff;
     --accent-secondary: #7c3aed;
     --accent-cyan: #00d9ff;
@@ -155,6 +159,13 @@ html:not([data-theme="dark"]) .input-group { background-color: #e2e8f0; }
 html:not([data-theme="dark"]) .white-bold { color: var(--text-main); }
 html:not([data-theme="dark"]) .visualizer-container { background-color: var(--visualizer-bg); }
 html:not([data-theme="dark"]) canvas { background-color: var(--canvas-bg); }
+
+/* Darken yellow syntax tokens on the light code background. */
+html:not([data-theme="dark"]) .string,
+html:not([data-theme="dark"]) [style*="#f1fa8c"],
+html:not([data-theme="dark"]) [style*="#f59e0b"] {
+    color: var(--code-string) !important;
+}
 
 /* Quiz page uses literal colors in its original stylesheet. */
 html[data-theme="dark"] .quiz-page,
